@@ -1,0 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background-body: #F2F4F7;
+  --color-menu-text-rgb: 102, 112, 133;
+
+  --color-components-nav-button-text: #495464;
+  --color-components-nav-button-text-active: #155AEF;
+  --color-components-nav-button-bg: #FFFFFF;
+  --color-components-nav-button-bg-active: #FCFCFD;
+  --color-components-nav-button-bg-hover: #1018280A;
+  --color-components-nav-border: #eaecf0;
+}
+
+.dark {
+  --color-background-body: #1d1d20;
+  --color-menu-text-rgb: 102, 112, 133;
+
+  --color-components-nav-button-text: #c8ceda99;
+  --color-components-nav-button-text-active: #f4f4f5;
+  --color-components-nav-button-bg: #FFFFFF;
+  --color-components-nav-button-bg-active: #c8ceda24;
+  --color-components-nav-button-border: #FFFFFFF2;
+  --color-components-nav-button-bg-hover: #c8ceda0a;
+  --color-components-nav-border: #333333;
+}
+
+body {
+  color: var(--color-components-nav-button-text);
+  background: var(--color-background-body);
+;}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+.left-section {
+  @apply flex items-center space-x-4;
+}
+
+.right-section {
+  @apply flex items-center space-x-4;
+}
+
+.header-bg {
+  background: var(--color-background-body);
+  border-color: var(--color-components-nav-border);
+}
