@@ -8,9 +8,7 @@ RUN npm install
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY app ./app
-COPY public ./public
-COPY package.json next.config.js tsconfig.json ./
+ADD . .
 RUN npm run build
 
 FROM node:18-alpine
