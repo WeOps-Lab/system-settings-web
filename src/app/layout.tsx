@@ -1,12 +1,12 @@
 'use client';
 import { Inter } from 'next/font/google';
-import './styles/globals.css';
+import '@/styles/globals.css';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { SessionProvider } from 'next-auth/react';
-import { LocaleProvider } from './context/locale';
-import { ThemeProvider } from './context/theme';
-import AuthProvider from './context/auth';
-import TopMenu from './components/top-menu';
+import { LocaleProvider } from '@/context/locale';
+import { ThemeProvider } from '@/context/theme';
+import AuthProvider from '@/context/auth';
+import TopMenu from '../components/top-menu';
 
 const inter = Inter({ subsets: ['latin'] });
 

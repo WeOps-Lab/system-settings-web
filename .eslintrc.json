@@ -6,7 +6,7 @@
   "rules": {
     "@typescript-eslint/consistent-type-definitions": [
       "error",
-      "interface"  // 强制使用 interface 来定义对象类型
+      "interface"
     ],
     "@typescript-eslint/no-var-requires": "off",
     "no-console": "off",

@@ -2,9 +2,9 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { IntlProvider } from 'react-intl';
-import enMessages from '../locales/en/message.json';
-import zhMessages from '../locales/zh/message.json';
-import flattenMessages from '../utils/flattenMessage'
+import enMessages from '@/locales/en/message.json';
+import zhMessages from '@/locales/zh/message.json';
+import flattenMessages from '@/utils/flattenMessage'
 
 interface MessageContent {
   [key: string]: string | MessageContent;

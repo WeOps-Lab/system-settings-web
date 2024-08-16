@@ -5,6 +5,7 @@ import { ComponentType } from 'react';
 import Image from 'next/image';
 import ThemeSwitcher from '../theme-switcher';
 import LanguageSwitcher from '../language-switcher';
+import UserInfo from '../user-info';
 import { useTranslation } from '../../utils/i18n';
 import menuStyle from './index.module.less';
 
@@ -17,7 +18,7 @@ const iconMap: { [key: string]: ComponentType } = {
   AlertFilled,
 };
 
-const TopMenu = () => {
+const TopMenu: React.FC = () => {
   const { t } = useTranslation();
   const pathname = usePathname();
 
@@ -51,6 +52,7 @@ const TopMenu = () => {
         <div className="flex items-center flex-shrink-0 space-x-4">
           <ThemeSwitcher />
           <LanguageSwitcher />
+          <UserInfo />
         </div>
       </div>
     </div>

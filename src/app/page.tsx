@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { get } from './utils/request';
+import { get } from '../utils/request';
 import { signIn } from 'next-auth/react';
 
 const HomePage = () => {

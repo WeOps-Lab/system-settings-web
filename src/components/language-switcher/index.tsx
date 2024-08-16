@@ -1,11 +1,11 @@
 'use client';
 
 import { Select } from 'antd';
-import { useLocale } from '../../context/locale';
+import { useLocale } from '@/context/locale';
 
 const { Option } = Select;
 
-export default function LanguageSwitcher() {
+const LanguageSwitcher: React.FC = () => {
   const { locale, setLocale } = useLocale();
 
   return (
@@ -15,3 +15,5 @@ export default function LanguageSwitcher() {
     </Select>
   );
 }
+
+export default LanguageSwitcher;

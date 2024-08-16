@@ -5,6 +5,7 @@
 :root {
   --color-background-body: #F2F4F7;
   --color-menu-text-rgb: 102, 112, 133;
+  --color-primary: #155AEF;
 
   --color-components-nav-button-text: #495464;
   --color-components-nav-button-text-active: #155AEF;

@@ -1,9 +1,9 @@
 'use client';
 
 import { Switch } from 'antd';
-import { useTheme } from '../../context/theme';
+import { useTheme } from '@/context/theme';
 
-export default function ThemeSwitcher() {
+const ThemeSwitcher: React.FC = () => {
   const { theme, setTheme } = useTheme();
 
   const handleChange = (checked: boolean) => {
@@ -18,3 +18,5 @@ export default function ThemeSwitcher() {
     />
   );
 }
+
+export default ThemeSwitcher;
