@@ -1,43 +1,41 @@
 import React from 'react';
-import { Drawer, Row, Col } from 'antd';
+import { Modal, Tabs } from 'antd';
 import ThemeSwitcher from '../theme-switcher';
 import LanguageSwitcher from '../language-switcher';
+
+const { TabPane } = Tabs;
 
 interface SettingsDrawerProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const SettingsDrawer: React.FC<SettingsDrawerProps> = ({
+const SettingsModal: React.FC<SettingsDrawerProps> = ({
   visible,
   onClose,
 }) => {
   return (
-    <Drawer
+    <Modal
       title="Settings"
-      placement="right"
-      onClose={onClose}
-      open={visible}
+      visible={visible}
+      onCancel={onClose}
+      footer={null}
       width={400}
     >
-      <div className="p-4">
-        <Row gutter={16}>
-          <Col span={12}>
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Theme Settings</h3>
-              <ThemeSwitcher />
-            </div>
-          </Col>
-          <Col span={12}>
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Language Settings</h3>
-              <LanguageSwitcher />
-            </div>
-          </Col>
-        </Row>
-      </div>
-    </Drawer>
+      <Tabs defaultActiveKey="1">
+        <TabPane tab="Theme Settings" key="1">
+          <div className="space-y-4">
+            <ThemeSwitcher />
+          </div>
+        </TabPane>
+        <TabPane tab="Language Settings" key="2">
+          <div className="space-y-4">
+            <LanguageSwitcher />
+          </div>
+        </TabPane>
+      </Tabs>
+    </Modal>
   );
 };
 
-export default SettingsDrawer;
+export default SettingsModal;

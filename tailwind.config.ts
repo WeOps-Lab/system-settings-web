@@ -14,7 +14,7 @@ const config: Config = {
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       colors: {
-        primary: '#1890ff', // 定义与 Ant Design 一致的颜色
+        primary: '#155AEF', // 定义与 Ant Design 一致的颜色
       },
     },
   },

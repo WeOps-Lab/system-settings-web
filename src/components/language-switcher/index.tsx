@@ -5,7 +5,7 @@ import { useLocale } from '@/context/locale';
 
 const { Option } = Select;
 
-const LanguageSwitcher: React.FC = () => {
+const LanguageSwitcher = () => {
   const { locale, setLocale } = useLocale();
 
   return (

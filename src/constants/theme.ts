@@ -1,21 +1,20 @@
 import { ThemeConfig } from 'antd/es/config-provider/context';
+import { theme } from 'antd';
 
 const lightTheme: ThemeConfig = {
   cssVar: true,
   token: {
-    colorPrimary: '#1890ff',
-    colorText: '#000000',
-    colorBgBase: '#ffffff',
+    colorPrimary: '#155AEF',
   },
+  algorithm: theme.defaultAlgorithm,
 };
 
 const darkTheme: ThemeConfig = {
   cssVar: true,
   token: {
-    colorPrimary: '#001529',
-    colorText: '#ffffff',
-    colorBgBase: '#000000',
+    colorPrimary: '#155AEF',
   },
+  algorithm: theme.darkAlgorithm,
 };
 
 export { lightTheme, darkTheme }

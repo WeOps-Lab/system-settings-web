@@ -1,18 +1,20 @@
-import React from 'react';
-import { Dropdown, Space, Menu, message, Avatar } from 'antd';
+import React, { useState } from 'react';
+import { Dropdown, Space, Menu, Avatar } from 'antd';
 import { signOut, useSession } from 'next-auth/react';
 import { DownOutlined } from '@ant-design/icons';
+import SettingsModal from './settings';
 
-const UserInfo: React.FC = () => {
+const UserInfo = () => {
   const { data: session } = useSession();
   const username = session?.user?.name || 'Qiu-Jia';
+  const [visible, setVisible] = useState<boolean>(false);
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
   };
 
   const handleSettings = () => {
-    message.info('Settings clicked');
+    setVisible(true);
   };
 
   const items: Array<{ label: JSX.Element; key: string } | { type: 'divider' }> = [
@@ -33,10 +35,10 @@ const UserInfo: React.FC = () => {
     <div>
       {username && (
         <Dropdown overlay={<Menu items={items} />} trigger={['click']}>
-          <a onClick={(e) => e.preventDefault()}>
+          <a className='cursor-pointer' onClick={(e) => e.preventDefault()}>
             <Space className='text-sm'>
               <Avatar 
-                size="small"
+                size={20}
                 style={{ 
                   backgroundColor: 'var(--color-primary)',
                   verticalAlign: 'middle' 
@@ -49,6 +51,9 @@ const UserInfo: React.FC = () => {
           </a>
         </Dropdown>
       )}
+      <SettingsModal 
+        visible={visible} 
+        onClose={() => setVisible(false)} />
     </div>
   );
 };

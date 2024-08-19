@@ -2,11 +2,12 @@ import withAntdLess from 'next-plugin-antd-less';
 
 export default withAntdLess({
   reactStrictMode: false, 
+  trailingSlash: true, // 确保 URL 末尾带有斜杠
   async rewrites() {
     return [
       {
         source: '/reqApi/:path*',
-        destination: 'http://yapi.canway.top/mock/3133/:path*', // 代理到后台服务器
+        destination: 'http://10.10.40.117:8000/:path*/', // 代理到后台服务器
       },
     ];
   },

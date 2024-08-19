@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 
-const NotFoundPage: React.FC = () => {
+const NotFoundPage = () => {
   return (
     <div style={{ textAlign: 'center', padding: '50px' }}>
       <h1 style={{ fontSize: '2rem', color: '#ff4d4f' }}>404 - Page Not Found</h1>

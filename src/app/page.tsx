@@ -1,16 +1,17 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { get } from '../utils/request';
+import useApiClient from '../utils/request';
 import { signIn } from 'next-auth/react';
 
 const HomePage = () => {
+  const { get, isLoading } = useApiClient();
   const [data, setData] = useState<unknown>(null);
 
   useEffect(() => {
-    console.log('coming~~');
+    if (isLoading) return;
     const fetchData = async () => {
       try {
-        const response = await get('/idc/datacenter/topo');
+        const response = await get('/new_app/test/');
         console.log('Fetched data:', response);
         setData(response);
       } catch (error) {
@@ -19,7 +20,7 @@ const HomePage = () => {
     };
 
     fetchData();
-  }, []);
+  }, [get, isLoading]);
 
   const handleSignIn = async () => {
     try {
