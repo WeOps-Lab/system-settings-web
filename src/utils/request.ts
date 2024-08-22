@@ -1,6 +1,8 @@
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { useEffect, useCallback, useState } from 'react';
 import { useAuth } from '@/context/auth';
+import { message } from 'antd';
+import { signIn } from 'next-auth/react';
 
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'reqApi',
@@ -26,7 +28,7 @@ const useApiClient = () => {
     const requestInterceptor = apiClient.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
         if (!token) {
-          // 如果没有 token，抛出错误
+          signIn('keycloak');
           return Promise.reject(new Error('No token available'));
         }
         config.headers.Authorization = `Bearer ${token}`;
@@ -43,6 +45,21 @@ const useApiClient = () => {
         return response.data;
       },
       (error) => {
+        if (error.response) {
+          const { status } = error.response;
+          const messgae = error.response?.data?.message
+          if (status === 401) {
+            // 处理 401 错误，重定向到 Keycloak 登录页面
+            signIn('keycloak');
+          } else if (status === 403) {
+            // 处理 403 错误，显示无权限消息
+            message.error(messgae);
+          } else if (status === 500) {
+            // 处理 500 错误，例如显示错误消息
+            console.error('Server error:', messgae);
+            message.error('服务器错误，请稍后再试');
+          }
+        }
         return Promise.reject(error);
       }
     );

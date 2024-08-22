@@ -36,7 +36,7 @@ const TopMenu = () => {
         <div className="flex items-center space-x-4">
           {menuItems.map((item) => {
             const IconComponent: React.ComponentType<IconComponentProps> = iconMap[item.icon];
-            const isActive = pathname === item.path;
+            const isActive = item.path === '/' ? pathname === '/' : pathname.startsWith(item.path);
             return (
               <Link key={item.path} href={item.path} legacyBehavior>
                 <a className={`px-3 py-2 rounded-[10px] flex items-center ${menuStyle.menuCol} ${isActive ? menuStyle.active : ''}`}>

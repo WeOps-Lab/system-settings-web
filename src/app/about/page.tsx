@@ -1,12 +1,6 @@
-import React from 'react';
+import { redirect } from 'next/navigation';
 
-const AboutPage = () => {
-  return (
-    <div>
-      <h1>About Us</h1>
-      <p>Welcome to the about page.</p>
-    </div>
-  );
-};
-
-export default AboutPage;
+export default function AboutPage() {
+  redirect('/about/document');
+  return null;
+}

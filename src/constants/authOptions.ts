@@ -22,6 +22,20 @@ async function requestRefreshOfAccessToken(token: JWT) {
   return response.json();
 }
 
+async function fetchUserInfo(accessToken: string) {
+  const response = await fetch(`${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/userinfo`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch user info");
+  }
+
+  return response.json();
+}
+
 export const authOptions: AuthOptions = {
   providers: [
     KeycloakProvider({
@@ -45,6 +59,17 @@ export const authOptions: AuthOptions = {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
         token.expiresAt = account.expires_at;
+
+        if (token.accessToken) {
+          try {
+            const userInfo = await fetchUserInfo(token.accessToken);
+            token.locale = userInfo.locale || 'en';
+            token.roles = userInfo.roles || [];
+          } catch (error) {
+            console.error("Error fetching user info", error);
+          }
+        }
+
         return token;
       }
 
@@ -62,6 +87,15 @@ export const authOptions: AuthOptions = {
             expiresAt: Math.floor(Date.now() / 1000 + (tokens.expires_in as number)),
             refreshToken: tokens.refresh_token ?? token.refreshToken,
           };
+
+          // 获取用户信息
+          try {
+            const userInfo = await fetchUserInfo(updatedToken?.accessToken ?? '');
+            updatedToken.locale = userInfo.locale || 'en';
+          } catch (error) {
+            console.error("Error fetching user info", error);
+          }
+
           return updatedToken;
         } catch (error) {
           console.error("Error refreshing access token", error);
@@ -75,6 +109,11 @@ export const authOptions: AuthOptions = {
       }
       if (token.error) {
         session.error = token.error;
+      }
+
+      // 将更多的用户信息添加到 session 中
+      if (token.locale) {
+        session.locale = token.locale;
       }
       return session;
     },

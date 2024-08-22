@@ -2,7 +2,6 @@ import withAntdLess from 'next-plugin-antd-less';
 
 export default withAntdLess({
   reactStrictMode: false, 
-  trailingSlash: true, // 确保 URL 末尾带有斜杠
   async rewrites() {
     return [
       {

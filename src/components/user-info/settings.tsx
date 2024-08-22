@@ -3,8 +3,6 @@ import { Modal, Tabs } from 'antd';
 import ThemeSwitcher from '../theme-switcher';
 import LanguageSwitcher from '../language-switcher';
 
-const { TabPane } = Tabs;
-
 interface SettingsDrawerProps {
   visible: boolean;
   onClose: () => void;
@@ -14,6 +12,27 @@ const SettingsModal: React.FC<SettingsDrawerProps> = ({
   visible,
   onClose,
 }) => {
+  const items = [
+    {
+      key: '1',
+      label: 'Theme Settings',
+      children: (
+        <div className="space-y-4">
+          <ThemeSwitcher />
+        </div>
+      ),
+    },
+    {
+      key: '2',
+      label: 'Language Settings',
+      children: (
+        <div className="space-y-4">
+          <LanguageSwitcher />
+        </div>
+      ),
+    },
+  ];
+
   return (
     <Modal
       title="Settings"
@@ -22,18 +41,7 @@ const SettingsModal: React.FC<SettingsDrawerProps> = ({
       footer={null}
       width={400}
     >
-      <Tabs defaultActiveKey="1">
-        <TabPane tab="Theme Settings" key="1">
-          <div className="space-y-4">
-            <ThemeSwitcher />
-          </div>
-        </TabPane>
-        <TabPane tab="Language Settings" key="2">
-          <div className="space-y-4">
-            <LanguageSwitcher />
-          </div>
-        </TabPane>
-      </Tabs>
+      <Tabs defaultActiveKey="1" items={items} />
     </Modal>
   );
 };

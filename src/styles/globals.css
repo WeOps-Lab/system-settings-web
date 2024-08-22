@@ -13,6 +13,12 @@
   --color-components-nav-button-bg-active: #FCFCFD;
   --color-components-nav-button-bg-hover: #1018280A;
   --color-components-nav-border: #eaecf0;
+
+  --color-components-side-nav-text: #495464;
+  --color-components-side-nav-text-active: #155AEF;
+  --color-components-side-nav-text-active-bg: #155aef14;
+  --color-components-side-nav-hover-bg: #f2f4f7;
+  --color-components-side-nav-bg: #FFFFFF;
 }
 
 .dark {
