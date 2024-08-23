@@ -18,8 +18,8 @@ const SideMenu: React.FC<SideMenuProps> = ({ menuItems }) => {
   const pathname = usePathname();
 
   return (
-    <aside className={`w-[216px] border-r pr-4 flex flex-col ${sideMenuStyle.sideMenu}`}>
-      <div className="p-4 text-gray-600">
+    <aside className={`w-[216px] pr-4 flex flex-col h-full ${sideMenuStyle.sideMenu}`}>
+      <div className={`p-4 rounded-md mb-3 ${sideMenuStyle.introduction}`}>
         <h2 className="text-lg font-semibold">Menu Introduction</h2>
         <p className="text-sm">This is a brief introduction about the menu.</p>
       </div>
