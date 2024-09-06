@@ -82,27 +82,27 @@ const useApiClient = () => {
   }, [token]);
 
   // 封装请求方法，并使用 useCallback 确保函数是稳定的
-  const get = useCallback(async <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+  const get = useCallback(async <T = any>(url: string, config?: AxiosRequestConfig, onError?: () => void): Promise<T> => {
     const response = await apiClient.get<T>(url, config);
     return handleResponse(response, onError);
   }, []);
 
-  const post = useCallback(async <T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
+  const post = useCallback(async <T = any>(url: string, data?: unknown, config?: AxiosRequestConfig, onError?: () => void): Promise<T> => {
     const response = await apiClient.post<T>(url, data, config);
     return handleResponse(response, onError);
   }, []);
 
-  const put = useCallback(async <T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
+  const put = useCallback(async <T = any>(url: string, data?: unknown, config?: AxiosRequestConfig, onError?: () => void): Promise<T> => {
     const response = await apiClient.put<T>(url, data, config);
     return handleResponse(response, onError);
   }, []);
 
-  const del = useCallback(async <T = any>(url: string, config?: AxiosRequestConfig): Promise<T> => {
+  const del = useCallback(async <T = any>(url: string, config?: AxiosRequestConfig, onError?: () => void): Promise<T> => {
     const response = await apiClient.delete<T>(url, config);
     return handleResponse(response, onError);
   }, []);
 
-  const patch = useCallback(async <T = any>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
+  const patch = useCallback(async <T = any>(url: string, data?: unknown, config?: AxiosRequestConfig, onError?: () => void): Promise<T> => {
     const response = await apiClient.patch<T>(url, data, config);
     return handleResponse(response, onError);
   }, []);
