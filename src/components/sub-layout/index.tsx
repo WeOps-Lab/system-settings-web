@@ -1,7 +1,6 @@
 import React from 'react';
 import SideMenu, { MenuItem } from './side-menu';
 import sideMenuStyle from './index.module.less';
-import { calc } from 'antd/es/theme/internal';
 
 interface WithSideMenuLayoutProps {
   menuItems: MenuItem[];
@@ -21,7 +20,7 @@ const WithSideMenuLayout: React.FC<WithSideMenuLayoutProps> = ({
   topSection
 }) => {
   return (
-    <div className={`flex grow ${sideMenuStyle.sideMenuLayout}`}>
+    <div className={`flex grow w-full ${sideMenuStyle.sideMenuLayout}`}>
       <SideMenu 
         menuItems={menuItems}
         showBackButton={showBackButton}
@@ -29,12 +28,12 @@ const WithSideMenuLayout: React.FC<WithSideMenuLayoutProps> = ({
       >
         {intro}
       </SideMenu>
-      <section className="flex flex-col" style={{ width: 'calc(100% - 260px)' }}>
+      <section className="flex-1 flex flex-col overflow-hidden">
         {topSection && (
-          <div className={`mb-4 rounded-md ${sideMenuStyle.sectionContainer}`} style={{ flex: '0 0 1' }}>
+          <div className={`mb-4 w-full rounded-md ${sideMenuStyle.sectionContainer}`}>
             {topSection}
           </div>
-        )}
+        )} 
         <div className={`p-4 flex-1 rounded-md overflow-auto ${sideMenuStyle.sectionContainer}`}>
           {children}
         </div>
