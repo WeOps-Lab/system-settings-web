@@ -22,7 +22,7 @@ const TopMenu = () => {
 
   // 菜单项配置
   const menuItems = [
-    { label: t('home'), icon: 'HomeFilled', path: '/' },
+    // { label: t('home'), icon: 'HomeFilled', path: '/' },
     { label: t('menu.log'), icon: 'AlertFilled', path: '/about' },
   ];
 
