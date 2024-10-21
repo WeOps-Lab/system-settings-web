@@ -4,7 +4,7 @@ const DocumentPage = () => {
   return (
     <div>
       <h1>Document Page</h1>
-      <p>This is the document page.</p>
+      <p>This is the document </p>
     </div>
   );
 };
