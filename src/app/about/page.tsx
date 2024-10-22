@@ -11,7 +11,6 @@ import type { TableColumnsType, TableProps} from 'antd';
 import {getRandomColor} from "@/utils/common";
 import IntroductionInfo from "@/components/introduction-info";
 import Tooltip from "@/components/tooltip";
-import OperateModal from "@/components/operate-modal";
 
 const User = () => {
   // 树形结构数据
@@ -143,6 +142,22 @@ const User = () => {
   const cancel: PopconfirmProps['onCancel'] = () => {
     message.error('Click on No');
   };
+
+  //弹窗
+  const [modalVisible, setModalVisible] = useState(false);
+  
+  const showModal = () => {
+    setModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setModalVisible(false);
+  };
+
   return (
     <div className="w-full">
       {/* 顶部的提示信息 */}
@@ -190,8 +205,8 @@ const User = () => {
             <Flex gap="middle" vertical>
               <Table<DataType> rowSelection={rowSelection} columns={columns} dataSource={data} pagination={{pageSize:5}} />
             </Flex>
-            <Tooltip title="name" >dfdffd</Tooltip>
-            <OperateModal>ffef</OperateModal>
+            
+           
           </div>
         </div>
 
