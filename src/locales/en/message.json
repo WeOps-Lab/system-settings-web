@@ -3,6 +3,7 @@
   "about": "About",
   "contact": "Contact",
   "menu": {
-    "log": "Log"
+    "log": "Log",
+    "user": "User"
   }
 }
