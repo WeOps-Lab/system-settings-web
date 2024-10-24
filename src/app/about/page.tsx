@@ -2,16 +2,15 @@
 import React from "react";
 import { Input, Form, Radio, Select } from 'antd';
 import { Tree, Modal } from 'antd';
-import type { PopconfirmProps } from 'antd';
-import type { GetProps, TreeDataNode } from 'antd';
 import { Button } from 'antd';
 import { useState, useEffect } from 'react';
-import { Flex, Table, Tag, Space, message, Popconfirm } from 'antd';
-import type { TableColumnsType, TableProps } from 'antd';
 import { getRandomColor } from "@/utils/common";
 import IntroductionInfo from "@/components/introduction-info";
-import Modalcontent from "@/components/modal-content";
 import OperateModal from "@/components/operate-modal";
+import { Flex, Table, Tag, Space, message, Popconfirm } from 'antd';
+import type { PopconfirmProps } from 'antd';
+import type { GetProps, TreeDataNode } from 'antd';
+import type { TableColumnsType, TableProps } from 'antd';
 
 type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
 
