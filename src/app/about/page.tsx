@@ -13,14 +13,32 @@ import IntroductionInfo from "@/components/introduction-info";
 import Modalcontent from "@/components/modal-content";
 import OperateModal from "@/components/operate-modal";
 
+type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
 
+interface DataType {
+  key: React.Key;
+  username: string;
+  name: string;
+  email: string;
+  number: string;
+  team: string;
+  role: string
+}
+
+type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection'];
 
 const User = () => {
-  // 树形结构数据
-  type DirectoryTreeProps = GetProps<typeof Tree.DirectoryTree>;
-
+//hook函数
+  const [data, setData] = useState<DataType[]>([]);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  //控制Modal的打开和关闭
+  const [modal2Open, setModal2Open] = useState(false);
+  //控制修改角色的弹窗
+  const [modalVisible, setModalVisible] = useState(false);
+  //主要控制选中的用户名
+  const [username, setUsername] = useState('zhang');
+  // 数据
   const { DirectoryTree } = Tree;
-
   const treeData: TreeDataNode[] = [
     {
       title: '默认目录1',
@@ -61,6 +79,77 @@ const User = () => {
     }
   ];
 
+  // 表格数据
+  const columns: TableColumnsType<DataType> = [
+    {
+      title: 'USERNAME', dataIndex: 'username', render: (text) => {
+        const color = getRandomColor();
+
+        return <div className="flex"><span className="h-5 w-5 rounded-[10px] text-center text-[12px] mr-1" style={{ color: "#ffffff", backgroundColor: color }}>{text?.substring(0, 1)}</span><span>{text}</span></div>
+      }
+    },
+    { title: 'NAME', dataIndex: 'name' },
+    { title: 'EMAIL', dataIndex: 'email' },
+    { title: 'NUMBER', dataIndex: 'number' },
+    { title: 'Team', dataIndex: 'team' },
+    {
+      title: 'Role', dataIndex: 'role', render: (text) => {
+        const color = text === 'Administrator' ? 'green' : 'processing ';
+        return <Tag color={color}>{text}</Tag>
+      }
+    },
+    {
+      title: 'Actions', dataIndex: 'key', render: (key) => {
+        return <Space size="middle">
+          <a onClick={()=>{editeuser()}}>{'edit'}</a>
+          <a onClick={()=>{setData(data.filter((item)=>item.key!==key))}}>{'delete'}</a>
+        </Space>
+      }
+    }];
+
+  const dataSource = Array.from<DataType>({ length: 4 }).map<DataType>((_, index) => (
+    {
+      key: index.toString(),
+      username: `username${index}`,
+      name: '张三',
+      email: `email${index}@gmail.com`,
+      number: 'Administrator',
+      team: 'Team A',
+      role: 'Administrator',
+    }
+  ));
+
+  const options = [
+    { label: 'administrators', value: 'administrators' },
+    { label: 'normal users', value: 'normal users' }
+  ];
+
+  const { TextArea } = Input;
+  //表单的数据初始化
+  const [form] = Form.useForm();
+
+
+  useEffect(() => {
+    setData(dataSource);
+    console.log(form);
+
+  },[])
+
+  useEffect(() => {
+    form.setFieldsValue({ role: "administrators" })
+  }, [])
+
+  useEffect(() => {
+    const newarray = data.filter((item) => selectedRowKeys.includes(item.key));
+    console.log(newarray);
+
+
+  },[selectedRowKeys])
+
+
+
+
+  //普通的方法
   const onSelect: DirectoryTreeProps['onSelect'] = (keys, info) => {
     console.log('Trigger Select', keys, info);
   };
@@ -68,65 +157,6 @@ const User = () => {
   const onExpand: DirectoryTreeProps['onExpand'] = (keys, info) => {
     console.log('Trigger Expand', keys, info);
   };
-
-  // 表格数据
-  type TableRowSelection<T extends object = object> = TableProps<T>['rowSelection'];
-  interface DataType {
-    key: React.Key;
-    username: string;
-    name: string;
-    email: string;
-    numbre: string;
-    team: string;
-    role: string
-  }
-  const columns: TableColumnsType<DataType> = [
-    {
-      title: 'USERNAME', dataIndex: 'username', render: (text) => {
-        const color = getRandomColor();
-
-        return <div className="flex"><span className="h-8 w-8 rounded-2xl text-center text-[20px]" style={{ color: "#ffffff", backgroundColor: color }}>{text?.substring(0, 1)}</span><span>{text}</span></div>
-      }
-    },
-    { title: 'NAME', dataIndex: 'name' },
-    { title: 'EMAIL', dataIndex: 'email' },
-    { title: 'NUMBER', dataIndex: 'numbre' },
-    { title: 'Team', dataIndex: 'team' },
-    {
-      title: 'Role', dataIndex: 'role', render: (text) => {
-        let color = 'green';
-        if (text === 'Administrator') {
-          color = 'green'
-        } else {
-          color = 'processing'
-        }
-        return <Tag color={color}>{text}</Tag>
-      }
-    },
-    {
-      title: 'Actions', dataIndex: 'actions', render: () => {
-        return <Space size="middle">
-          <a onClick={()=>{console.log('fff')}}>{'edit'}</a>
-          <a>{'delete'}</a>
-        </Space>
-      }
-    }];
-
-  //数据源
-  const dataSource = Array.from<DataType>({ length: 4 }).map<DataType>((_, index) => (
-    {
-      key: index.toString(),
-      username: `username${index}`,
-      name: '张三',
-      email: `email${index}@gmail.com`,
-      numbre: 'Administrator',
-      team: 'Team A',
-      role: 'Administrator',
-
-    }
-  ));
-  const [data, setData] = useState(dataSource);
-  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log('selectedRowKeys changed: ', newSelectedRowKeys);
@@ -139,9 +169,11 @@ const User = () => {
   };
   //添加一条数据
   const addData = () => {
+    const key = data.length + 1;
+    const keystr= key.toString()
     setModal2Open(true);
     form.resetFields();
-    form.setFieldsValue({ role: "administrators" })
+    form.setFieldsValue({ role: "administrators", team: 'Team A', key: {keystr}})
   };
   function onOk() {
     console.log(form.getFieldsValue())
@@ -150,25 +182,18 @@ const User = () => {
   }
 
   //编辑用户
-  // const edituser = (e:any) => {
-  //   setModal2Open(true);
-  //   form.resetFields();
-  //   form.setFieldsValue({ role: "administrators" })
-  //   console.log(e.target);
-  // };
-
-
-
-
-
-
-
+  function editeuser(){
+    const newdata = data.filter((item) => selectedRowKeys.includes(item.key));
+    console.log(newdata);
+    setModal2Open(true);
+    form.setFieldsValue(newdata[0]);
+  }
 
 
   // 确认删除
   const confirm: PopconfirmProps['onConfirm'] = () => {
     const newData = data.filter((item) => !selectedRowKeys.includes(item.key));
-    setData(newData)
+    setData(newData);
     message.success('Click on Yes');
   };
 
@@ -176,8 +201,6 @@ const User = () => {
     message.error('Click on No');
   };
 
-  //控制Modal的打开和关闭
-  const [modal2Open, setModal2Open] = useState(false);
 
   function onOkprops(value: any) {
 
@@ -186,20 +209,20 @@ const User = () => {
     console.log(value);
   }
 
-  const options = [
-    { label: 'administrators', value: 'administrators' },
-    { label: 'normal users', value: 'normal users' }
-  ];
+  //批量修改用户的角色
+  const handleModalOpen = () => {
+    setModalVisible(false);
 
-  const { TextArea } = Input;
-  //表单的数据初始化
-  const [form] = Form.useForm();
-  useEffect(() => {
-    form.setFieldsValue({ role: "administrators" })
-  }, [])
+  };
+  const handleModalClose = () => {
+    
+    setModalVisible(false);
+  };
+  function modifyRole() {
+    console.log(form.getFieldsValue())
 
-
-
+    setModalVisible(true);
+  }
 
 
 
@@ -212,10 +235,10 @@ const User = () => {
       {/* 主体内容 */}
       {/* 左边 */}
       <div className="flex">
-        <div className="w-[250px]  flex flex-col justify-items-center items-center bg-white mt-4 rounded-md mr-3">
+        <div className="w-[250px] h-[440px] flex flex-col justify-items-center items-center bg-white mt-4 rounded-md mr-3 overflow-scroll">
           <Input className="w-5/6 mt-2" placeholder="search..." />
           <DirectoryTree
-            className="w-5/6 mt-2 h-full"
+            className="mt-2 h-full"
             multiple
             defaultExpandAll
             onSelect={onSelect}
@@ -224,7 +247,7 @@ const User = () => {
           />
         </div>
         {/* 右边 */}
-        <div className="h-full ml-auto mt-4 flex-1">
+        <div className="h-[420px] ml-auto mt-4 flex-1">
           <div className="w-full h-11 mb-2">
             <div className="flex justify-between">
               <div className="w-[200px] h-[40px]">
@@ -232,10 +255,11 @@ const User = () => {
               </div>
               <div className="flex">
                 <Button className="mr-1 mt-1" type="primary" onClick={addData}>+Add</Button>
-                <OperateModal title="Add User" open={modal2Open}
+                <OperateModal
+                  title="Add User" 
+                  open={modal2Open}
                   onOk={() => onOk()}
                   onCancel={() => setModal2Open(false)}>
-
                   <Form
                     form={form}
                     style={{ maxWidth: 600 }}
@@ -254,8 +278,8 @@ const User = () => {
                     </Form.Item>
                     <Form.Item name='team' label="Team*">
                       <Select
-                        defaultValue="team1"
                         style={{ width: 120 }}
+                        defaultValue="team1"
                         allowClear
                         options={[{ value: 'team1', label: 'team1' }, { value: 'team2', label: 'team2' }]}
                         placeholder="select it"
@@ -265,15 +289,31 @@ const User = () => {
                     <Form.Item name='comment'><TextArea placeholder="textarea with clear icon" allowClear /></Form.Item>
                   </Form>
                 </OperateModal>
-                <Button className="mr-1 mt-1">Modify Role</Button>
+
+                {/* 批量修改角色 */}
+                <Button className="mr-1 mt-1" onClick={modifyRole}>Modify Role</Button>
+                <OperateModal
+                  onOk={handleModalOpen} 
+                  onCancel={handleModalClose}
+                  open={modalVisible}>
+                  <Form
+                    form={form}
+                    style={{ maxWidth: 600 }}
+                  > 
+                    <Form.Item><p>Selected users:</p><span className="text-[#1890ff]">{username}</span></Form.Item>
+                    <Form.Item name='role'><Radio.Group block options={options} /></Form.Item>
+                    <Form.Item name='comment'><TextArea placeholder="textarea with clear icon" allowClear /></Form.Item>
+                  </Form> 
+
+                </OperateModal>
                 <Popconfirm
+                  className="mt-1"
                   title="Delete the task"
                   description="Are you sure to delete this task?"
-                  onConfirm={confirm}
-                  onCancel={cancel}
                   okText="Yes"
                   cancelText="No"
-                  className="mt-1"
+                  onConfirm={confirm}
+                  onCancel={cancel}
                 >
                   <Button>Modify Delete</Button>
                 </Popconfirm>
@@ -282,7 +322,7 @@ const User = () => {
           </div>
           <div className="w-full h-fit">
             <Flex gap="middle" vertical>
-              <Table<DataType> rowSelection={rowSelection} columns={columns} dataSource={data} pagination={{ pageSize: 5 }} />
+              <Table<DataType> size={'middle'} pagination={{ pageSize: 5 }} rowSelection={rowSelection} columns={columns} dataSource={data} />
             </Flex>
 
 
