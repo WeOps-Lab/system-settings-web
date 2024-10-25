@@ -1,7 +1,8 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/utils/i18n';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 interface AuthContextType {
@@ -12,24 +13,29 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { data: session, status } = useSession();
+  const { t } = useTranslation();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     if (status === 'loading') return;
     console.log('session:', session);
     if (!session) {
-      // signIn('keycloak');
+      signIn('keycloak');
       return;
     }
     if (session?.accessToken) {
       setToken(session.accessToken);
+      setIsAuthenticated(true);
+      const userLocale = session.locale || 'en';
+      localStorage.setItem('locale', userLocale);
     } else {
-      console.warn('No accessToken found in session');
+      console.warn(t('common.noAccessToken'));
     }
   }, [session, status, router]);
 
-  if (status === 'loading') {
+  if (status === 'loading' || !isAuthenticated) {
     return (
       <div className='first-loader-wrapper'>
         <div className='loading-arc'></div>

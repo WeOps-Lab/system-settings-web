@@ -22,18 +22,44 @@ async function requestRefreshOfAccessToken(token: JWT) {
   return response.json();
 }
 
-async function fetchUserInfo(accessToken: string) {
-  const response = await fetch(`${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/userinfo`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
+async function introspectToken(token: string) {
+  const response = await fetch(
+    `${process.env.KEYCLOAK_ISSUER}/protocol/openid-connect/token/introspect`,
+    {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: process.env.KEYCLOAK_CLIENT_ID!,
+        client_secret: process.env.KEYCLOAK_CLIENT_SECRET!,
+        token,
+      }),
+      method: "POST",
+      cache: "no-store",
+    }
+  );
 
   if (!response.ok) {
-    throw new Error("Failed to fetch user info");
+    throw new Error("Failed to introspect token");
   }
 
   return response.json();
+}
+
+async function fetchUserRolesAndLocale(accessToken: string) {
+  try {
+    const introspectData = await introspectToken(accessToken);
+    return {
+      locale: introspectData.locale || 'en',
+      roles: introspectData.realm_access.roles || [],
+      username: introspectData.username || '',
+    };
+  } catch (error) {
+    console.error("Error introspecting token", error);
+    return {
+      locale: 'en',
+      roles: [],
+      username: '',
+    };
+  }
 }
 
 export const authOptions: AuthOptions = {
@@ -62,14 +88,14 @@ export const authOptions: AuthOptions = {
 
         if (token.accessToken) {
           try {
-            const userInfo = await fetchUserInfo(token.accessToken);
+            const userInfo = await fetchUserRolesAndLocale(token.accessToken);
             token.locale = userInfo.locale || 'en';
             token.roles = userInfo.roles || [];
+            token.username = userInfo.username || '';
           } catch (error) {
             console.error("Error fetching user info", error);
           }
         }
-
         return token;
       }
 
@@ -87,11 +113,11 @@ export const authOptions: AuthOptions = {
             expiresAt: Math.floor(Date.now() / 1000 + (tokens.expires_in as number)),
             refreshToken: tokens.refresh_token ?? token.refreshToken,
           };
-
-          // 获取用户信息
           try {
-            const userInfo = await fetchUserInfo(updatedToken?.accessToken ?? '');
+            const userInfo = await fetchUserRolesAndLocale(updatedToken?.accessToken ?? '');
             updatedToken.locale = userInfo.locale || 'en';
+            updatedToken.username = userInfo.username || '';
+            updatedToken.roles = userInfo.roles || [];
           } catch (error) {
             console.error("Error fetching user info", error);
           }
@@ -110,12 +136,16 @@ export const authOptions: AuthOptions = {
       if (token.error) {
         session.error = token.error;
       }
-
-      // 将更多的用户信息添加到 session 中
+      if (token.username) {
+        session.username = token.username;
+      }
       if (token.locale) {
         session.locale = token.locale;
+      }
+      if (token.roles) {
+        session.roles = token.roles;
       }
       return session;
     },
   },
-};
+}
