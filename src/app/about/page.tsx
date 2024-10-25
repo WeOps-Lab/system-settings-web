@@ -2,8 +2,8 @@
 import React from 'react';
 import { Input, Form, Radio, Select } from 'antd';
 import { Tree } from 'antd';
-import { Button } from 'antd';
-import { useState, useEffect } from 'react';
+import { Button,ConfigProvider } from 'antd';
+import { useState, useEffect,useRef } from 'react';
 import { getRandomColor } from '@/utils/common';
 import IntroductionInfo from '@/components/introduction-info';
 import OperateModal from '@/components/operate-modal';
@@ -11,6 +11,7 @@ import { Flex, Table, Tag, Space } from 'antd';
 import type { PopconfirmProps } from 'antd';
 import type { TreeDataNode } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
+import userInfoStyle from './index.module.less'
 
 // 定义接口
 interface DataType {
@@ -44,6 +45,9 @@ const User = () => {
   //表单的数据初始化
   const [form] = Form.useForm();
   const [onlykeytable, setonlykeytable] = useState<number>(tabledata.length);
+  const modifydeleteuseref=useRef<HTMLButtonElement>(null);
+  const modifyroleuseref=useRef<HTMLButtonElement>(null);
+
 
 
   // 数据
@@ -188,6 +192,12 @@ const User = () => {
     form.setFieldsValue({ role: `Administrator` });
   }, []);
 
+  useEffect(() => {
+    selectedRowKeys.length===0?modifydeleteuseref.current?.setAttribute('disabled', 'true'):modifydeleteuseref.current?.removeAttribute('disabled');
+    selectedRowKeys.length===0?modifyroleuseref.current?.setAttribute('disabled', 'true'):modifyroleuseref.current?.removeAttribute('disabled');
+  }, [selectedRowKeys.length]);
+
+
   //普通的方法
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
@@ -288,21 +298,31 @@ const User = () => {
     settableData(newData);
   }
   return (
-    <div className="w-full">
+    <div className={`w-full ${userInfoStyle.userInfo}`}>
       <IntroductionInfo
         message="Display all information.You can maintain user information and assign roles."
         title="Users"
       />
       {/* 左边 */}
-      <div className="flex">
-        <div className="w-[250px] h-[440px] flex flex-col justify-items-center items-center bg-white mt-4 rounded-md mr-3 overflow-scroll">
+      <div className="flex w-full">
+        <div className="w-[250px] h-[440px] flex-shrink-0 flex flex-col justify-items-center items-center r-bg-color mt-4 rounded-md mr-3 overflow-scroll">
           <Input className="w-5/6 mt-2" placeholder="search..." />
-          <DirectoryTree
-            className="mt-2 h-full"
-            multiple
-            defaultExpandAll
-            treeData={treeData}
-          />
+
+
+          <ConfigProvider
+            theme={{
+              token: {
+                colorPrimary: '#E6F4FF',
+              },
+            }}
+          >
+            <DirectoryTree
+              className="w-full h-full mt-4 ml-3"
+              multiple
+              defaultExpandAll
+              treeData={treeData}
+            />
+          </ConfigProvider>
         </div>
         {/* 右边 */}
         <div className="h-[420px] ml-auto mt-4 flex-1">
@@ -403,7 +423,7 @@ const User = () => {
                   </Form>
                 </OperateModal>
                 {/* 批量修改角色 */}
-                <Button className='mr-1 mt-1 op-8' onClick={modifyRole}>
+                <Button ref={modifyroleuseref} className='mr-1 mt-1 op-8' onClick={modifyRole}>
                   Modify Role
                 </Button>
                 <OperateModal
@@ -431,6 +451,7 @@ const User = () => {
                 </OperateModal>
                 {/* 批量删除 */}
                 <Button
+                  ref={modifydeleteuseref}
                   className="mr-1 mt-1 red"
                   onClick={() => {
                     setModifyRoleOpen(true);
