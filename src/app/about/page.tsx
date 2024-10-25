@@ -28,7 +28,7 @@ type TableRowSelection<T extends object = object> =
 
 const User = () => {
   //hook函数
-  const [data, setData] = useState<DataType[]>([]);
+  const [tabledata, settableData] = useState<DataType[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   //控制Modal的打开和关闭
   const [addmodalOpen, setaddModalOpen] = useState(false);
@@ -40,12 +40,14 @@ const User = () => {
   const [username, setUsername] = useState(['zhangsan']);
   const [modifyRoleOpen, setModifyRoleOpen] = useState<boolean>(false);
   const [editkey, seteditkey] = useState(1);
+  const [edituseName,setedituseName]=useState<string>('');
   //表单的数据初始化
   const [form] = Form.useForm();
+  const [onlykeytable, setonlykeytable] = useState<number>(tabledata.length);
+
 
   // 数据
   const { DirectoryTree } = Tree;
-  const { TextArea } = Input;
   const treeData: TreeDataNode[] = [
     {
       title: '默认目录1',
@@ -127,7 +129,7 @@ const User = () => {
       title: 'Role',
       dataIndex: 'role',
       render: (text) => {
-        const color = text === 'administrators' ? 'green' : 'blue ';
+        const color = text === 'Administrator' ? 'green' : 'processing';
         return <Tag color={color}>{text}</Tag>;
       },
     },
@@ -161,27 +163,29 @@ const User = () => {
     (_, index) => ({
       key: index,
       username: `username${index}`,
-      name: '张三',
+      name: `张三${index}`,
       email: `email${index}@gmail.com`,
-      number: 'administrator',
+      number: 'Administrator',
       team: 'Team A',
-      role: 'administrators',
+      role: 'Administrator',
     })
   );
 
   const options = [
-    { label: 'administrators', value: 'administrators' },
-    { label: 'normal users', value: 'normal users' },
+    { label: 'Administrator', value: 'Administrator' },
+    { label: 'Normal users', value: 'Normal users' },
   ];
 
   //useEffect函数
 
   useEffect(() => {
-    setData(dataSource);
+    settableData(dataSource);
+    setonlykeytable(tabledata.length);
+
   }, []);
 
   useEffect(() => {
-    form.setFieldsValue({ role: 'administrators' });
+    form.setFieldsValue({ role: `Administrator` });
   }, []);
 
   //普通的方法
@@ -198,14 +202,14 @@ const User = () => {
     //初始化数据
     setaddModalOpen(true);
     form.resetFields();
-    form.setFieldsValue({ role: 'administrators', team: 'Team A' });
+    form.setFieldsValue({ role: 'Administrator', team: 'Team A' });
     console.log(form.getFieldsValue);
   };
 
   function onOk() {
     //点击确定按钮，将数据添加到表格中
-    const key = data.length + 1;
-    setData([...data, { ...form.getFieldsValue(), key: key }]);
+    settableData([...tabledata, { ...form.getFieldsValue(), key:onlykeytable }]);
+    setonlykeytable(onlykeytable+1);
     setaddModalOpen(false);
     setSelectedRowKeys([]);
   }
@@ -214,13 +218,13 @@ const User = () => {
   function modifyRole() {
     //初始化数据
     setModalVisible(true);
-    form.setFieldsValue({ role: 'administrators' });
+    form.setFieldsValue({ role: 'a' });
     const arr = [...selectedRowKeys];
     //获取名字
     console.log(selectedRowKeys);
     const newarr: string[] = [];
     arr.forEach((item) => {
-      data.forEach((itemname) => {
+      tabledata.forEach((itemname) => {
         if (itemname.key === item) {
           newarr.push(itemname.username);
         }
@@ -230,19 +234,14 @@ const User = () => {
   }
   // 点击确定按钮，将修改数据添加到表格中
   const handleModalOpen = () => {
-    const arr = [...selectedRowKeys];
-    const editeusedata: DataType[] = [];
-    data.forEach((item) => {
-      arr.forEach((itemarr) => {
-        if (itemarr === item.key) {
-          editeusedata.push({ ...item, role: form.getFieldsValue().role });
-        }
-      });
+    const newRole = form.getFieldsValue().role; 
+    const newData = tabledata.map((item) => {
+      if (selectedRowKeys.includes(item.key)) {
+        return {...item, role: newRole };
+      }
+      return item; 
     });
-    const nodata = [...data].filter(
-      (item) => !selectedRowKeys.includes(item.key)
-    );
-    setData([...nodata, ...editeusedata]);
+    settableData(newData); 
     setModalVisible(false);
     setSelectedRowKeys([]);
   };
@@ -252,8 +251,8 @@ const User = () => {
   };
   //批量删除用户
   const confirm: PopconfirmProps['onConfirm'] = () => {
-    const newData = data.filter((item) => !selectedRowKeys.includes(item.key));
-    setData(newData);
+    const newData = tabledata.filter((item) => !selectedRowKeys.includes(item.key));
+    settableData(newData);
     setModifyRoleOpen(false);
   };
 
@@ -265,21 +264,17 @@ const User = () => {
     seteditkey(key);
     seteditmodalOpen(true);
     form.resetFields();
-    const [editfinishdata] = data.filter((item) => item.key === key);
+    const [editfinishdata] = tabledata.filter((item) => item.key === key);
     form.setFieldsValue({ ...editfinishdata });
+    setedituseName(editfinishdata.username);
   }
   //点击确定按钮，将修改数据添加到表格中
-  function oneditOk(key: number) {
-    const newarr: DataType[] = [];
-    data.forEach((item) => {
-      if (item.key === key) {
-        newarr.push(form.getFieldsValue());
-        console.log(form.getFieldsValue().name);
-      } else {
-        newarr.push(item);
-      }
+  function oneditOk() {
+    const newarr: DataType[] = tabledata.map(item => {
+      //添加key值
+      return item.key === editkey? {...form.getFieldsValue(),key:editkey} : item;
     });
-    setData(newarr);
+    settableData(newarr);
     seteditmodalOpen(false);
     setSelectedRowKeys([]);
   }
@@ -289,10 +284,9 @@ const User = () => {
   }
   //删除用户
   function deleteuse(key: number) {
-    const newData = data.filter((item) => item.key !== key);
-    setData(newData);
+    const newData = tabledata.filter((item) => item.key !== key);
+    settableData(newData);
   }
-
   return (
     <div className="w-full">
       <IntroductionInfo
@@ -323,24 +317,25 @@ const User = () => {
                 </Button>
                 <OperateModal
                   title="Add User"
+                  closable={false}
                   open={addmodalOpen}
                   onOk={() => onOk()}
                   onCancel={() => setaddModalOpen(false)}
                 >
                   <Form style={{ maxWidth: 600 }} form={form} >
-                    <Form.Item name="username" label="UserName*">
+                    <Form.Item name="username" label="UserName*" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item name="name" label="Name">
+                    <Form.Item className='ml-[30px]' name="name" label="Name" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item name="email" label="Email">
+                    <Form.Item className='ml-[30px]' name="email" label="Email" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item name="number" label="Number">
+                    <Form.Item className='ml-[12px]' name="number" label="Number" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item name="team" label="Team*">
+                    <Form.Item className='ml-[27px]' name="team" label="Team*" colon={false}>
                       <Select
                         style={{ width: 120 }}
                         defaultValue="team1"
@@ -352,87 +347,91 @@ const User = () => {
                         placeholder="select it"
                       />
                     </Form.Item>
-                    <Form.Item name="role">
+                    <Form.Item name="role" colon={false}>
                       <Radio.Group block options={options} />
                     </Form.Item>
-                    <Form.Item name="comment">
-                      <TextArea
-                        placeholder="textarea with clear icon"
-                        allowClear
-                      />
+                    <Form.Item name="comment" colon={false}>
+                      <Tag className='ml-[50px]'>
+                      The administrator supports organization and member management in the<br/>
+                      background, or configuration in the backend management of other     <br/>
+                      modules, to ensure regular user operation.
+                      </Tag>
                     </Form.Item>
                   </Form>
                 </OperateModal>
                 <OperateModal
-                  title="edite"
+                  closable={false}
+                  title={`Edite-${edituseName}`}
                   open={editmodelOpen}
-                  onOk={() => oneditOk(editkey)}
+                  onOk={() => oneditOk()}
                   onCancel={() => oneditCancel()}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item name="username" label="UserName*">
+                    <Form.Item name="username" label="UserName*" colon={false}>
+                      <Tag className='w-[400px] h-[34px] pt-1'>{edituseName}</Tag>
+                    </Form.Item>
+                    <Form.Item className='ml-[30px]' name="name" label="Name" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item name="name" label="Name">
+                    <Form.Item className='ml-[30px]' name="email" label="Email" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item name="email" label="Email">
+                    <Form.Item className='ml-[15px]' name="number" label="Number" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item name="number" label="Number">
-                      <Input placeholder="input placeholder" />
-                    </Form.Item>
-                    <Form.Item name="team" label="Team*">
+                    <Form.Item className='ml-[25px]' name="team" label="Team*" colon={false}>
                       <Select
                         style={{ width: 120 }}
-                        defaultValue="team1"
+                        defaultValue="team A"
                         allowClear
                         options={[
-                          { value: 'team1', label: 'team1' },
-                          { value: 'team2', label: 'team2' },
+                          { value: 'team A', label: 'team A' },
+                          { value: 'team B', label: 'team B' },
                         ]}
                         placeholder="select it"
                       />
                     </Form.Item>
-                    <Form.Item name="role">
+                    <Form.Item name="role" colon={false}>
                       <Radio.Group block options={options} />
                     </Form.Item>
-                    <Form.Item name="comment">
-                      <TextArea
-                        placeholder="textarea with clear icon"
-                        allowClear
-                      />
+                    <Form.Item name="comment" colon={false}>
+                      <Tag className='ml-[50px]'>
+                      The administrator supports organization and member management in the <br/> 
+                      background, or configuration in the backend management of other <br/> 
+                      modules, to ensure regular user operation.</Tag>
                     </Form.Item>
                   </Form>
                 </OperateModal>
                 {/* 批量修改角色 */}
-                <Button className="mr-1 mt-1" onClick={modifyRole}>
+                <Button className='mr-1 mt-1 op-8' onClick={modifyRole}>
                   Modify Role
                 </Button>
                 <OperateModal
+                  title='Batch Modify Roles'
+                  closable={false}
                   open={modalVisible}
                   onOk={handleModalOpen}
                   onCancel={handleModalClose}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item>
-                      <p>Selected users:</p>
-                      <span className="text-[#1890ff]">{username}</span>
+                    <Form.Item className='ml-[50px]' colon={false}>
+                      <span>Selected users:</span>
+                      <span className="text-[#1890ff]">{username.toString()}</span>
                     </Form.Item>
-                    <Form.Item name="role">
+                    <Form.Item name="role" colon={false}>
                       <Radio.Group block options={options} />
                     </Form.Item>
-                    <Form.Item name="comment">
-                      <TextArea
-                        placeholder="textarea with clear icon"
-                        allowClear
-                      />
+                    <Form.Item name="comment" colon={false}>
+                      <Tag className='ml-[50px]'>
+                      The administrator role supports organization and member management in<br/> 
+                      the background, or configuration in the backend management of other<br/>
+                      modules, to ensure normal user operation.</Tag>
                     </Form.Item>
                   </Form>
                 </OperateModal>
                 {/* 批量删除 */}
                 <Button
-                  className="mr-1 mt-1"
+                  className="mr-1 mt-1 red"
                   onClick={() => {
                     setModifyRoleOpen(true);
                   }}
@@ -471,7 +470,7 @@ const User = () => {
                 size={'middle'}
                 pagination={{ pageSize: 5 }}
                 columns={columns}
-                dataSource={data}
+                dataSource={tabledata}
                 rowSelection={rowSelection}
               />
             </Flex>
