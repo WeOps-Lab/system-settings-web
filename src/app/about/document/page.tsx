@@ -46,8 +46,8 @@ const DocumentPage = () => {
           displayFieldKeys,
           choosableFields: initColums.filter((item) => item.key !== 'action'),
         }}
-        onSelectFields={onSelectFields}
         rowKey="id"
+        onSelectFields={onSelectFields}
       />
     </div>
   );

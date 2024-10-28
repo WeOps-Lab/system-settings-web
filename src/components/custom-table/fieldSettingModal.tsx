@@ -32,11 +32,11 @@ const FieldSettingModal = forwardRef<FieldModalRef, FieldModalProps>(
       choosableFields.map((field) => field.key)
     );
     const [dragFields, setDragFields] = useState(choosableFields);
+    const [dragItem, setDragItem] = useState<DragItem | null>(null);
+    const [dragOverItem, setDragOverItem] = useState<DragItem | null>(null);
     const checkAll = choosableFields.length === checkedFields.length;
     const indeterminate =
       checkedFields.length > 0 && checkedFields.length < choosableFields.length;
-    const [dragItem, setDragItem] = useState<DragItem | null>(null);
-    const [dragOverItem, setDragOverItem] = useState<DragItem | null>(null);
 
     useImperativeHandle(ref, () => ({
       showModal: () => {
