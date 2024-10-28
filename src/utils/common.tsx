@@ -20,7 +20,7 @@ export const deepClone = (obj: any, hash = new WeakMap()) => {
   }
 
   // 复制函数
-  if (typeof obj === "function") {
+  if (typeof obj === 'function') {
     return function (this: unknown, ...args: unknown[]): unknown {
       return obj.apply(this, args);
     };
@@ -41,8 +41,9 @@ export const deepClone = (obj: any, hash = new WeakMap()) => {
   return result;
 };
 
+// 获取头像随机色
 export const getRandomColor = () => {
-  const colors = ["#875CFF", "#FF9214", "#00CBA6", "#1272FF"];
+  const colors = ['#875CFF', '#FF9214', '#00CBA6', '#1272FF'];
   const randomIndex = Math.floor(Math.random() * colors.length);
   return colors[randomIndex];
 };
