@@ -43,7 +43,7 @@
     "inputMsg": "Please input the",
     "input": "Input",
     "select": "Select",
-    "serverError": "ServerError",
+    "serverError": "Server error, please try again later",
     "fileType": "is not a supported file type.",
     "invalidData": "Invalid data format",
     "training": "Training",
