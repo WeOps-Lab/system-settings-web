@@ -59,8 +59,8 @@
     "useLocaleError": "useLocale must be used within a LocaleProvider",
     "useThemeError": "useTheme must be used within a ThemeProvider",
     "selectAll": "Select All",
-    "clear": "clear",
-    "selected": "selected",
+    "clear": "Clear",
+    "selected": "Selected",
     "items": "item(s)"
   },
   "cutomTable": {
