@@ -2,8 +2,8 @@
 import React from 'react';
 import { Input, Form, Radio, Select } from 'antd';
 import { Tree } from 'antd';
-import { Button,ConfigProvider } from 'antd';
-import { useState, useEffect,useRef } from 'react';
+import { Button, ConfigProvider } from 'antd';
+import { useState, useEffect, useRef } from 'react';
 import { getRandomColor } from '@/utils/common';
 import IntroductionInfo from '@/components/introduction-info';
 import OperateModal from '@/components/operate-modal';
@@ -41,12 +41,13 @@ const User = () => {
   const [username, setUsername] = useState(['zhangsan']);
   const [modifyRoleOpen, setModifyRoleOpen] = useState<boolean>(false);
   const [editkey, seteditkey] = useState(1);
-  const [edituseName,setedituseName]=useState<string>('');
+  const [edituseName, setedituseName] = useState<string>('');
   //表单的数据初始化
   const [form] = Form.useForm();
   const [onlykeytable, setonlykeytable] = useState<number>(tabledata.length);
-  const modifydeleteuseref=useRef<HTMLButtonElement>(null);
-  const modifyroleuseref=useRef<HTMLButtonElement>(null);
+  const modifydeleteuseref = useRef<HTMLButtonElement>(null);
+  const modifyroleuseref = useRef<HTMLButtonElement>(null);
+
 
 
 
@@ -143,20 +144,12 @@ const User = () => {
       render: (key) => {
         return (
           <Space size="middle">
-            <a
-              onClick={() => {
-                editeuser(key);
-              }}
-            >
-              {'edit'}
-            </a>
-            <a
-              onClick={() => {
-                deleteuse(key);
-              }}
-            >
-              {'delete'}
-            </a>
+            <Button onClick={() => { editeuser(key) }} color="primary" variant="link">
+              edit
+            </Button>
+            <Button onClick={() => { deleteuse(key) }} color="primary" variant="link">
+              delete
+            </Button>
           </Space>
         );
       },
@@ -183,9 +176,7 @@ const User = () => {
   //useEffect函数
 
   useEffect(() => {
-    settableData(dataSource);
-    setonlykeytable(tabledata.length);
-
+    init()
   }, []);
 
   useEffect(() => {
@@ -193,11 +184,15 @@ const User = () => {
   }, []);
 
   useEffect(() => {
-    selectedRowKeys.length===0?modifydeleteuseref.current?.setAttribute('disabled', 'true'):modifydeleteuseref.current?.removeAttribute('disabled');
-    selectedRowKeys.length===0?modifyroleuseref.current?.setAttribute('disabled', 'true'):modifyroleuseref.current?.removeAttribute('disabled');
+    selectedRowKeys.length === 0 ? modifydeleteuseref.current?.setAttribute('disabled', 'true') : modifydeleteuseref.current?.removeAttribute('disabled');
+    selectedRowKeys.length === 0 ? modifyroleuseref.current?.setAttribute('disabled', 'true') : modifyroleuseref.current?.removeAttribute('disabled');
   }, [selectedRowKeys.length]);
 
 
+  const init = () => {
+    settableData(dataSource);
+    setonlykeytable(dataSource.length);
+  }
   //普通的方法
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
@@ -213,13 +208,13 @@ const User = () => {
     setaddModalOpen(true);
     form.resetFields();
     form.setFieldsValue({ role: 'Administrator', team: 'Team A' });
-    console.log(form.getFieldsValue);
+
   };
 
   function onOk() {
     //点击确定按钮，将数据添加到表格中
-    settableData([...tabledata, { ...form.getFieldsValue(), key:onlykeytable }]);
-    setonlykeytable(onlykeytable+1);
+    settableData([...tabledata, { ...form.getFieldsValue(), key: onlykeytable }]);
+    setonlykeytable(onlykeytable + 1);
     setaddModalOpen(false);
     setSelectedRowKeys([]);
   }
@@ -228,13 +223,13 @@ const User = () => {
   function modifyRole() {
     //初始化数据
     setModalVisible(true);
-    form.setFieldsValue({ role: 'a' });
+    form.resetFields();
+    form.setFieldsValue({ role: 'Administrator' });
     const arr = [...selectedRowKeys];
     //获取名字
-    console.log(selectedRowKeys);
     const newarr: string[] = [];
     arr.forEach((item) => {
-      tabledata.forEach((itemname) => {
+      tabledata.find((itemname) => {
         if (itemname.key === item) {
           newarr.push(itemname.username);
         }
@@ -244,14 +239,15 @@ const User = () => {
   }
   // 点击确定按钮，将修改数据添加到表格中
   const handleModalOpen = () => {
-    const newRole = form.getFieldsValue().role; 
+    const newRole = form.getFieldsValue().role;
     const newData = tabledata.map((item) => {
       if (selectedRowKeys.includes(item.key)) {
-        return {...item, role: newRole };
+        return { ...item, role: newRole };
+
       }
-      return item; 
+      return item;
     });
-    settableData(newData); 
+    settableData(newData);
     setModalVisible(false);
     setSelectedRowKeys([]);
   };
@@ -282,7 +278,7 @@ const User = () => {
   function oneditOk() {
     const newarr: DataType[] = tabledata.map(item => {
       //添加key值
-      return item.key === editkey? {...form.getFieldsValue(),key:editkey} : item;
+      return item.key === editkey ? { ...form.getFieldsValue(), key: editkey } : item;
     });
     settableData(newarr);
     seteditmodalOpen(false);
@@ -297,6 +293,8 @@ const User = () => {
     const newData = tabledata.filter((item) => item.key !== key);
     settableData(newData);
   }
+
+
   return (
     <div className={`w-full ${userInfoStyle.userInfo}`}>
       <IntroductionInfo
@@ -305,9 +303,8 @@ const User = () => {
       />
       {/* 左边 */}
       <div className="flex w-full">
-        <div className="w-[250px] h-[440px] flex-shrink-0 flex flex-col justify-items-center items-center r-bg-color mt-4 rounded-md mr-3 overflow-scroll">
+        <div className="w-[250px] h-[440px] flex-shrink-0 flex flex-col justify-items-center items-center r-bg-color mt-4 rounded-md mr-3">
           <Input className="w-5/6 mt-2" placeholder="search..." />
-
 
           <ConfigProvider
             theme={{
@@ -317,10 +314,12 @@ const User = () => {
             }}
           >
             <DirectoryTree
-              className="w-full h-full mt-4 ml-3"
+              className="w-[230px] h-[380px] mt-2 overflow-auto"
               multiple
+              showIcon={false}
               defaultExpandAll
               treeData={treeData}
+
             />
           </ConfigProvider>
         </div>
@@ -372,9 +371,9 @@ const User = () => {
                     </Form.Item>
                     <Form.Item name="comment" colon={false}>
                       <Tag className='ml-[50px]'>
-                      The administrator supports organization and member management in the<br/>
-                      background, or configuration in the backend management of other     <br/>
-                      modules, to ensure regular user operation.
+                        The administrator supports organization and member management in the<br />
+                        background, or configuration in the backend management of other     <br />
+                        modules, to ensure regular user operation.
                       </Tag>
                     </Form.Item>
                   </Form>
@@ -416,9 +415,9 @@ const User = () => {
                     </Form.Item>
                     <Form.Item name="comment" colon={false}>
                       <Tag className='ml-[50px]'>
-                      The administrator supports organization and member management in the <br/> 
-                      background, or configuration in the backend management of other <br/> 
-                      modules, to ensure regular user operation.</Tag>
+                        The administrator supports organization and member management in the <br />
+                        background, or configuration in the backend management of other <br />
+                        modules, to ensure regular user operation.</Tag>
                     </Form.Item>
                   </Form>
                 </OperateModal>
@@ -443,9 +442,9 @@ const User = () => {
                     </Form.Item>
                     <Form.Item name="comment" colon={false}>
                       <Tag className='ml-[50px]'>
-                      The administrator role supports organization and member management in<br/> 
-                      the background, or configuration in the backend management of other<br/>
-                      modules, to ensure normal user operation.</Tag>
+                        The administrator role supports organization and member management in<br />
+                        the background, or configuration in the backend management of other<br />
+                        modules, to ensure normal user operation.</Tag>
                     </Form.Item>
                   </Form>
                 </OperateModal>
@@ -485,10 +484,11 @@ const User = () => {
               </div>
             </div>
           </div>
-          <div className="w-full h-fit">
+          <div className="w-[960px] h-[350px]">
             <Flex gap="middle" vertical>
               <Table<DataType>
                 size={'middle'}
+                scroll={{ y: 'calc(100vh - 140px)' }}
                 pagination={{ pageSize: 5 }}
                 columns={columns}
                 dataSource={tabledata}

@@ -1,8 +1,18 @@
 .userInfo {
     background-color: var(background-color);
+
     :global {
-        .ant-tree-title {
-            color: #1672FF;
+        .ant-tree-node-selected {
+            color: var(--color-primary) !important;
         }
+
+        .ant-tree-treenode-selected {
+            .ant-tree-switcher-icon {
+                color: var(--color-primary) !important;
+            }
+        }
+
     }
+
+
 }

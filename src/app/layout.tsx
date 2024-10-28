@@ -21,16 +21,16 @@ export default function RootLayout({
       <head>
         <Script src="/iconfont.js" strategy="afterInteractive" />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} overflow-hidden`} >
         <SessionProvider>
           <LocaleProvider>
             <ThemeProvider>
               <AuthProvider>
-                <div className="flex flex-col min-h-screen">
-                  <header className="sticky top-0 left-0 right-0 flex justify-between items-center header-bg">
+                <div className="flex flex-col min-h-scree">
+                  <header className="top-0 left-0 right-0 flex justify-between items-center header-bg">
                     <TopMenu />
                   </header>
-                  <main className="flex-1 p-4 h-full flex">
+                  <main className="flex-1 p-4 h-[400px] w-full flex overflow-hidden">
                     <AntdRegistry>{children}</AntdRegistry>
                   </main>
                 </div>
