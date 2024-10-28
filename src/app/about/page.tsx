@@ -488,7 +488,7 @@ const User = () => {
             <Flex gap="middle" vertical>
               <Table<DataType>
                 size={'middle'}
-                scroll={{ y: 'calc(100vh - 140px)' }}
+                scroll={{ y: 'calc(100vh - 300px)' }}
                 pagination={{ pageSize: 5 }}
                 columns={columns}
                 dataSource={tabledata}
