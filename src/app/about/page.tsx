@@ -11,7 +11,7 @@ import { Flex, Table, Tag, Space } from 'antd';
 import type { PopconfirmProps } from 'antd';
 import type { TreeDataNode } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
-import userInfoStyle from './index.module.less'
+import userInfoStyle from './index.module.less';
 
 // 定义接口
 interface DataType {
@@ -47,9 +47,6 @@ const User = () => {
   const [onlykeytable, setOnlykeytable] = useState<number>(tabledata.length);
   const modifydeleteuseref = useRef<HTMLButtonElement>(null);
   const modifyroleuseref = useRef<HTMLButtonElement>(null);
-
-
-
 
   // 数据
   const { DirectoryTree } = Tree;
@@ -144,10 +141,22 @@ const User = () => {
       render: (key) => {
         return (
           <Space size="middle">
-            <Button onClick={() => { editeuser(key) }} color="primary" variant="link">
+            <Button
+              onClick={() => {
+                editeuser(key);
+              }}
+              color="primary"
+              variant="link"
+            >
               edit
             </Button>
-            <Button onClick={() => { deleteuse(key) }} color="primary" variant="link">
+            <Button
+              onClick={() => {
+                deleteuse(key);
+              }}
+              color="primary"
+              variant="link"
+            >
               delete
             </Button>
           </Space>
@@ -176,7 +185,7 @@ const User = () => {
   //useEffect函数
 
   useEffect(() => {
-    init()
+    init();
   }, []);
 
   useEffect(() => {
@@ -184,10 +193,13 @@ const User = () => {
   }, []);
 
   useEffect(() => {
-    selectedRowKeys.length === 0 ? modifydeleteuseref.current?.setAttribute('disabled', 'true') : modifydeleteuseref.current?.removeAttribute('disabled');
-    selectedRowKeys.length === 0 ? modifyroleuseref.current?.setAttribute('disabled', 'true') : modifyroleuseref.current?.removeAttribute('disabled');
+    selectedRowKeys.length === 0
+      ? modifydeleteuseref.current?.setAttribute('disabled', 'true')
+      : modifydeleteuseref.current?.removeAttribute('disabled');
+    selectedRowKeys.length === 0
+      ? modifyroleuseref.current?.setAttribute('disabled', 'true')
+      : modifyroleuseref.current?.removeAttribute('disabled');
   }, [selectedRowKeys.length]);
-
 
   const init = () => {
     setTableData(dataSource);
@@ -208,7 +220,6 @@ const User = () => {
     setAddModalOpen(true);
     form.resetFields();
     form.setFieldsValue({ role: 'Administrator', team: 'Team A' });
-
   };
 
   function onOk() {
@@ -243,7 +254,6 @@ const User = () => {
     const newData = tabledata.map((item) => {
       if (selectedRowKeys.includes(item.key)) {
         return { ...item, role: newRole };
-
       }
       return item;
     });
@@ -276,9 +286,11 @@ const User = () => {
   }
   //点击确定按钮，将修改数据添加到表格中
   function oneditOk() {
-    const newarr: DataType[] = tabledata.map(item => {
+    const newarr: DataType[] = tabledata.map((item) => {
       //添加key值
-      return item.key === editkey ? { ...form.getFieldsValue(), key: editkey } : item;
+      return item.key === editkey
+        ? { ...form.getFieldsValue(), key: editkey }
+        : item;
     });
     setTableData(newarr);
     setEditmodalOpen(false);
@@ -293,7 +305,6 @@ const User = () => {
     const newData = tabledata.filter((item) => item.key !== key);
     setTableData(newData);
   }
-
 
   return (
     <div className={`w-full ${userInfoStyle.userInfo}`}>
@@ -319,7 +330,6 @@ const User = () => {
               showIcon={false}
               defaultExpandAll
               treeData={treeData}
-
             />
           </ConfigProvider>
         </div>
@@ -341,20 +351,40 @@ const User = () => {
                   onOk={() => onOk()}
                   onCancel={() => setAddModalOpen(false)}
                 >
-                  <Form style={{ maxWidth: 600 }} form={form} >
+                  <Form style={{ maxWidth: 600 }} form={form}>
                     <Form.Item name="username" label="UserName*" colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item className='ml-[30px]' name="name" label="Name" colon={false}>
+                    <Form.Item
+                      className="ml-[30px]"
+                      name="name"
+                      label="Name"
+                      colon={false}
+                    >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item className='ml-[30px]' name="email" label="Email" colon={false}>
+                    <Form.Item
+                      className="ml-[30px]"
+                      name="email"
+                      label="Email"
+                      colon={false}
+                    >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item className='ml-[12px]' name="number" label="Number" colon={false}>
+                    <Form.Item
+                      className="ml-[12px]"
+                      name="number"
+                      label="Number"
+                      colon={false}
+                    >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item className='ml-[27px]' name="team" label="Team*" colon={false}>
+                    <Form.Item
+                      className="ml-[27px]"
+                      name="team"
+                      label="Team*"
+                      colon={false}
+                    >
                       <Select
                         style={{ width: 120 }}
                         defaultValue="team1"
@@ -370,9 +400,12 @@ const User = () => {
                       <Radio.Group block options={options} />
                     </Form.Item>
                     <Form.Item name="comment" colon={false}>
-                      <Tag className='ml-[50px]'>
-                        The administrator supports organization and member management in the<br />
-                        background, or configuration in the backend management of other     <br />
+                      <Tag className="ml-[50px]">
+                        The administrator supports organization and member
+                        management in the
+                        <br />
+                        background, or configuration in the backend management
+                        of other <br />
                         modules, to ensure regular user operation.
                       </Tag>
                     </Form.Item>
@@ -387,18 +420,40 @@ const User = () => {
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
                     <Form.Item name="username" label="UserName*" colon={false}>
-                      <Tag className='w-[400px] h-[34px] pt-1'>{edituseName}</Tag>
+                      <Tag className="w-[400px] h-[34px] pt-1">
+                        {edituseName}
+                      </Tag>
                     </Form.Item>
-                    <Form.Item className='ml-[30px]' name="name" label="Name" colon={false}>
+                    <Form.Item
+                      className="ml-[30px]"
+                      name="name"
+                      label="Name"
+                      colon={false}
+                    >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item className='ml-[30px]' name="email" label="Email" colon={false}>
+                    <Form.Item
+                      className="ml-[30px]"
+                      name="email"
+                      label="Email"
+                      colon={false}
+                    >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item className='ml-[15px]' name="number" label="Number" colon={false}>
+                    <Form.Item
+                      className="ml-[15px]"
+                      name="number"
+                      label="Number"
+                      colon={false}
+                    >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
-                    <Form.Item className='ml-[25px]' name="team" label="Team*" colon={false}>
+                    <Form.Item
+                      className="ml-[25px]"
+                      name="team"
+                      label="Team*"
+                      colon={false}
+                    >
                       <Select
                         style={{ width: 120 }}
                         defaultValue="team A"
@@ -414,37 +469,51 @@ const User = () => {
                       <Radio.Group block options={options} />
                     </Form.Item>
                     <Form.Item name="comment" colon={false}>
-                      <Tag className='ml-[50px]'>
-                        The administrator supports organization and member management in the <br />
-                        background, or configuration in the backend management of other <br />
-                        modules, to ensure regular user operation.</Tag>
+                      <Tag className="ml-[50px]">
+                        The administrator supports organization and member
+                        management in the <br />
+                        background, or configuration in the backend management
+                        of other <br />
+                        modules, to ensure regular user operation.
+                      </Tag>
                     </Form.Item>
                   </Form>
                 </OperateModal>
                 {/* 批量修改角色 */}
-                <Button ref={modifyroleuseref} className='mr-1 mt-1 op-8' onClick={modifyRole}>
+                <Button
+                  ref={modifyroleuseref}
+                  className="mr-1 mt-1 op-8"
+                  onClick={modifyRole}
+                >
                   Modify Role
                 </Button>
                 <OperateModal
-                  title='Batch Modify Roles'
+                  title="Batch Modify Roles"
                   closable={false}
                   open={modalVisible}
                   onOk={handleModalOpen}
                   onCancel={handleModalClose}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item className='ml-[50px]' colon={false}>
+                    <Form.Item className="ml-[50px]" colon={false}>
                       <span>Selected users:</span>
-                      <span className="text-[#1890ff]">{username.toString()}</span>
+                      <span className="text-[#1890ff]">
+                        {username.toString()}
+                      </span>
                     </Form.Item>
                     <Form.Item name="role" colon={false}>
                       <Radio.Group block options={options} />
                     </Form.Item>
                     <Form.Item name="comment" colon={false}>
-                      <Tag className='ml-[50px]'>
-                        The administrator role supports organization and member management in<br />
-                        the background, or configuration in the backend management of other<br />
-                        modules, to ensure normal user operation.</Tag>
+                      <Tag className="ml-[50px]">
+                        The administrator role supports organization and member
+                        management in
+                        <br />
+                        the background, or configuration in the backend
+                        management of other
+                        <br />
+                        modules, to ensure normal user operation.
+                      </Tag>
                     </Form.Item>
                   </Form>
                 </OperateModal>
