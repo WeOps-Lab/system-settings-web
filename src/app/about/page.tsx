@@ -29,22 +29,22 @@ type TableRowSelection<T extends object = object> =
 
 const User = () => {
   //hook函数
-  const [tabledata, settableData] = useState<DataType[]>([]);
+  const [tabledata, setTableData] = useState<DataType[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   //控制Modal的打开和关闭
-  const [addmodalOpen, setaddModalOpen] = useState(false);
+  const [addmodalOpen, setAddModalOpen] = useState(false);
   //编辑的Modal的打开和关闭
-  const [editmodelOpen, seteditmodalOpen] = useState(false);
+  const [editmodelOpen, setEditmodalOpen] = useState(false);
   //控制修改角色的弹窗
   const [modalVisible, setModalVisible] = useState(false);
   //主要控制选中的用户名
   const [username, setUsername] = useState(['zhangsan']);
   const [modifyRoleOpen, setModifyRoleOpen] = useState<boolean>(false);
-  const [editkey, seteditkey] = useState(1);
-  const [edituseName, setedituseName] = useState<string>('');
+  const [editkey, setEditkey] = useState(1);
+  const [edituseName, setEdituseName] = useState<string>('');
   //表单的数据初始化
   const [form] = Form.useForm();
-  const [onlykeytable, setonlykeytable] = useState<number>(tabledata.length);
+  const [onlykeytable, setOnlykeytable] = useState<number>(tabledata.length);
   const modifydeleteuseref = useRef<HTMLButtonElement>(null);
   const modifyroleuseref = useRef<HTMLButtonElement>(null);
 
@@ -202,9 +202,9 @@ const User = () => {
   }, [selectedRowKeys.length]);
 
   const init = () => {
-    settableData(dataSource);
-    setonlykeytable(dataSource.length);
-  };
+    setTableData(dataSource);
+    setOnlykeytable(dataSource.length);
+  }
   //普通的方法
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
@@ -217,19 +217,16 @@ const User = () => {
   //添加添加数据的功能
   const addData = () => {
     //初始化数据
-    setaddModalOpen(true);
+    setAddModalOpen(true);
     form.resetFields();
     form.setFieldsValue({ role: 'Administrator', team: 'Team A' });
   };
 
   function onOk() {
     //点击确定按钮，将数据添加到表格中
-    settableData([
-      ...tabledata,
-      { ...form.getFieldsValue(), key: onlykeytable },
-    ]);
-    setonlykeytable(onlykeytable + 1);
-    setaddModalOpen(false);
+    setTableData([...tabledata, { ...form.getFieldsValue(), key: onlykeytable }]);
+    setOnlykeytable(onlykeytable + 1);
+    setAddModalOpen(false);
     setSelectedRowKeys([]);
   }
 
@@ -260,7 +257,7 @@ const User = () => {
       }
       return item;
     });
-    settableData(newData);
+    setTableData(newData);
     setModalVisible(false);
     setSelectedRowKeys([]);
   };
@@ -270,10 +267,8 @@ const User = () => {
   };
   //批量删除用户
   const confirm: PopconfirmProps['onConfirm'] = () => {
-    const newData = tabledata.filter(
-      (item) => !selectedRowKeys.includes(item.key)
-    );
-    settableData(newData);
+    const newData = tabledata.filter((item) => !selectedRowKeys.includes(item.key));
+    setTableData(newData);
     setModifyRoleOpen(false);
   };
 
@@ -282,12 +277,12 @@ const User = () => {
   };
   //编辑用户
   function editeuser(key: number) {
-    seteditkey(key);
-    seteditmodalOpen(true);
+    setEditkey(key);
+    setEditmodalOpen(true);
     form.resetFields();
     const [editfinishdata] = tabledata.filter((item) => item.key === key);
     form.setFieldsValue({ ...editfinishdata });
-    setedituseName(editfinishdata.username);
+    setEdituseName(editfinishdata.username);
   }
   //点击确定按钮，将修改数据添加到表格中
   function oneditOk() {
@@ -297,18 +292,18 @@ const User = () => {
         ? { ...form.getFieldsValue(), key: editkey }
         : item;
     });
-    settableData(newarr);
-    seteditmodalOpen(false);
+    setTableData(newarr);
+    setEditmodalOpen(false);
     setSelectedRowKeys([]);
   }
 
   function oneditCancel() {
-    seteditmodalOpen(false);
+    setEditmodalOpen(false);
   }
   //删除用户
   function deleteuse(key: number) {
     const newData = tabledata.filter((item) => item.key !== key);
-    settableData(newData);
+    setTableData(newData);
   }
 
   return (
@@ -354,7 +349,7 @@ const User = () => {
                   closable={false}
                   open={addmodalOpen}
                   onOk={() => onOk()}
-                  onCancel={() => setaddModalOpen(false)}
+                  onCancel={() => setAddModalOpen(false)}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
                     <Form.Item name="username" label="UserName*" colon={false}>
@@ -562,7 +557,7 @@ const User = () => {
             <Flex gap="middle" vertical>
               <Table<DataType>
                 size={'middle'}
-                scroll={{ y: 'calc(100vh - 140px)' }}
+                scroll={{ y: 'calc(100vh - 300px)' }}
                 pagination={{ pageSize: 5 }}
                 columns={columns}
                 dataSource={tabledata}
