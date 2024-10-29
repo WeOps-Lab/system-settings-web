@@ -12,7 +12,8 @@ import type { PopconfirmProps } from 'antd';
 import type { TreeDataNode } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
 import userInfoStyle from './index.module.less';
-import { useTranslation } from '../../utils/i18n';
+import { useTranslation } from '@/utils/i18n';
+
 
 
 // 定义接口
