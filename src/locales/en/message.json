@@ -61,7 +61,10 @@
     "selectAll": "Select All",
     "clear": "Clear",
     "selected": "Selected",
-    "items": "item(s)"
+    "items": "item(s)",
+    "modifyrole": "Modify Role",
+    "modifydelete": "Modify Delete"
+
   },
   "cutomTable": {
     "fieldSetting": "List field settings"
@@ -69,5 +72,16 @@
   "menu": {
     "log": "Log",
     "user": "User"
+  },
+  "tableItem":{
+    "username": "USERNAME",
+    "name": "NAME",
+    "email": "EMAIL",
+    "number": "NUMBER",
+    "team": "TEAM",
+    "role": "ROLE",
+    "actions": "ACTIONS",
+    "administrator": "Administrator",
+    "normalusers": "Normal Users"
   }
 }

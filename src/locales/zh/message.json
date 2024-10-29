@@ -57,10 +57,23 @@
     "noAccessToken": "在会话中未找到访问令牌",
     "usePermissionsContextError": "usePermissionsContext必须在PermissionsProvider内使用",
     "useLocaleError": "useLocale必须在LocaleProvider内使用",
-    "useThemeError": "useTheme必须在ThemeProvider内使用"
+    "useThemeError": "useTheme必须在ThemeProvider内使用",
+    "modifyrole": "批量修改角色",
+    "modifydelete": "批量删除"
   },
   "menu": {
     "log": "日志",
     "user": "用户"
+  },
+  "tableItem":{
+    "username": "用户名",
+    "name": "姓名",
+    "email": "邮箱",
+    "number": "电话",
+    "team": "团队",
+    "role": "角色",
+    "actions": "操作",
+    "administrator": "管理员",
+    "normalusers": "普通用户"
   }
 }

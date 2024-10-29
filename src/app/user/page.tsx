@@ -12,6 +12,9 @@ import type { PopconfirmProps } from 'antd';
 import type { TreeDataNode } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
 import userInfoStyle from './index.module.less';
+import { useTranslation } from '@/utils/i18n';
+
+
 
 // 定义接口
 interface DataType {
@@ -47,6 +50,37 @@ const User = () => {
   const [onlykeytable, setOnlykeytable] = useState<number>(tabledata.length);
   const modifydeleteuseref = useRef<HTMLButtonElement>(null);
   const modifyroleuseref = useRef<HTMLButtonElement>(null);
+
+
+  const { t } = useTranslation();
+  const tableItems =
+  {
+    username: t('tableItem.username'),
+    name: t('tableItem.name'),
+    email: t('tableItem.email'),
+    number: t('tableItem.number'),
+    team: t('tableItem.team'),
+    role: t('tableItem.role'),
+    actions: t('tableItem.actions'),
+    administrator: t('tableItem.administrator'),
+    normalusers: t('tableItem.normalusers'),
+
+  }
+
+
+
+  const commonItems = {
+    delete: t('common.delete'),
+    search: t('common.search'),
+    add: t('common.add'),
+    cancel: t('common.cancel'),
+    confirm: t('common.confirm'),
+    edit: t('common.edit'),
+    modifyrole: t('common.modifyrole'),
+    modifydelete: t('common.modifydelete'),
+    addNew: t('common.addNew')
+
+  }
 
   // 数据
   const { DirectoryTree } = Tree;
@@ -106,7 +140,7 @@ const User = () => {
   // 表格数据
   const columns: TableColumnsType<DataType> = [
     {
-      title: 'USERNAME',
+      title: tableItems.username,
       dataIndex: 'username',
       render: (text) => {
         const color = getRandomColor();
@@ -123,12 +157,12 @@ const User = () => {
         );
       },
     },
-    { title: 'NAME', dataIndex: 'name' },
-    { title: 'EMAIL', dataIndex: 'email' },
-    { title: 'NUMBER', dataIndex: 'number' },
-    { title: 'Team', dataIndex: 'team' },
+    { title: tableItems.name, dataIndex: 'name' },
+    { title: tableItems.email, dataIndex: 'email' },
+    { title: tableItems.number, dataIndex: 'number' },
+    { title: tableItems.team, dataIndex: 'team' },
     {
-      title: 'Role',
+      title: tableItems.role,
       dataIndex: 'role',
       render: (text) => {
         const color = text === 'Administrator' ? 'green' : 'processing';
@@ -136,7 +170,8 @@ const User = () => {
       },
     },
     {
-      title: 'Actions',
+      title: tableItems.actions,
+
       dataIndex: 'key',
       render: (key) => {
         return (
@@ -148,7 +183,7 @@ const User = () => {
               color="primary"
               variant="link"
             >
-              edit
+              {commonItems.edit}
             </Button>
             <Button
               onClick={() => {
@@ -157,7 +192,8 @@ const User = () => {
               color="primary"
               variant="link"
             >
-              delete
+              {commonItems.delete}
+
             </Button>
           </Space>
         );
@@ -178,8 +214,8 @@ const User = () => {
   );
 
   const options = [
-    { label: 'Administrator', value: 'Administrator' },
-    { label: 'Normal users', value: 'Normal users' },
+    { label: tableItems.administrator, value: 'Administrator' },
+    { label: tableItems.normalusers, value: 'Normal users' },
   ];
 
   //useEffect函数
@@ -307,16 +343,15 @@ const User = () => {
   }
 
   return (
-    <div className={`w-full ${userInfoStyle.userInfo}`}>
+    <div className={`${userInfoStyle.userInfo} ${userInfoStyle.bgHeight}`}>
       <IntroductionInfo
         message="Display all information.You can maintain user information and assign roles."
         title="Users"
       />
       {/* 左边 */}
-      <div className="flex w-full">
-        <div className="w-[250px] h-[440px] flex-shrink-0 flex flex-col justify-items-center items-center r-bg-color mt-4 rounded-md mr-3">
-          <Input className="w-5/6 mt-2" placeholder="search..." />
-
+      <div className={`flex overflow-hidden`} style={{ height: 'calc(100vh-141px)' }}>
+        <div className="w-[250px] flex-shrink-0 flex flex-col justify-items-center items-center r-bg-color mt-4 rounded-md mr-3">
+          <Input className="w-5/6 mt-2" placeholder={`${commonItems.search}...`} />
           <ConfigProvider
             theme={{
               token: {
@@ -325,7 +360,7 @@ const User = () => {
             }}
           >
             <DirectoryTree
-              className="w-[230px] h-[380px] mt-2 overflow-auto"
+              className="w-[230px] h-[320px] mt-2 overflow-auto"
               multiple
               showIcon={false}
               defaultExpandAll
@@ -334,31 +369,33 @@ const User = () => {
           </ConfigProvider>
         </div>
         {/* 右边 */}
-        <div className="h-[420px] ml-auto mt-4 flex-1">
+        <div className="ml-auto mt-4 flex-1" style={{ height: 'calc(100vh-181px)', width: 'calc(100vw-278px)' }}>
           <div className="w-full h-11 mb-2">
             <div className="flex justify-between">
               <div className="w-[200px] h-[40px]">
-                <Input className="h-6 mt-2" placeholder="search..." />
+                <Input className="h-6 mt-2" placeholder={`${commonItems.search}...`} />
               </div>
               <div className="flex">
                 <Button className="mr-1 mt-1" type="primary" onClick={addData}>
-                  +Add
+                  +{commonItems.add}
                 </Button>
                 <OperateModal
-                  title="Add User"
+                  title={commonItems.addNew}
                   closable={false}
                   open={addmodalOpen}
+                  okText={commonItems.confirm}
+                  cancelText={commonItems.cancel}
                   onOk={() => onOk()}
                   onCancel={() => setAddModalOpen(false)}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item name="username" label="UserName*" colon={false}>
+                    <Form.Item name="username" label={`${tableItems.username}*`} colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
                       className="ml-[30px]"
                       name="name"
-                      label="Name"
+                      label={`${tableItems.name}`}
                       colon={false}
                     >
                       <Input placeholder="input placeholder" />
@@ -366,7 +403,7 @@ const User = () => {
                     <Form.Item
                       className="ml-[30px]"
                       name="email"
-                      label="Email"
+                      label={`${tableItems.email}`}
                       colon={false}
                     >
                       <Input placeholder="input placeholder" />
@@ -374,7 +411,7 @@ const User = () => {
                     <Form.Item
                       className="ml-[12px]"
                       name="number"
-                      label="Number"
+                      label={`${tableItems.number}`}
                       colon={false}
                     >
                       <Input placeholder="input placeholder" />
@@ -382,7 +419,7 @@ const User = () => {
                     <Form.Item
                       className="ml-[27px]"
                       name="team"
-                      label="Team*"
+                      label={`${tableItems.team}*`}
                       colon={false}
                     >
                       <Select
@@ -415,11 +452,13 @@ const User = () => {
                   closable={false}
                   title={`Edite-${edituseName}`}
                   open={editmodelOpen}
+                  okText={commonItems.confirm}
+                  cancelText={commonItems.cancel}
                   onOk={() => oneditOk()}
                   onCancel={() => oneditCancel()}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item name="username" label="UserName*" colon={false}>
+                    <Form.Item name="username" label={`${tableItems.username}*`} colon={false}>
                       <Tag className="w-[400px] h-[34px] pt-1">
                         {edituseName}
                       </Tag>
@@ -427,7 +466,7 @@ const User = () => {
                     <Form.Item
                       className="ml-[30px]"
                       name="name"
-                      label="Name"
+                      label={`${tableItems.name}`}
                       colon={false}
                     >
                       <Input placeholder="input placeholder" />
@@ -435,7 +474,7 @@ const User = () => {
                     <Form.Item
                       className="ml-[30px]"
                       name="email"
-                      label="Email"
+                      label={`${tableItems.email}`}
                       colon={false}
                     >
                       <Input placeholder="input placeholder" />
@@ -443,7 +482,7 @@ const User = () => {
                     <Form.Item
                       className="ml-[15px]"
                       name="number"
-                      label="Number"
+                      label={`${tableItems.number}`}
                       colon={false}
                     >
                       <Input placeholder="input placeholder" />
@@ -451,7 +490,7 @@ const User = () => {
                     <Form.Item
                       className="ml-[25px]"
                       name="team"
-                      label="Team*"
+                      label={`${tableItems.team}*`}
                       colon={false}
                     >
                       <Select
@@ -485,12 +524,14 @@ const User = () => {
                   className="mr-1 mt-1 op-8"
                   onClick={modifyRole}
                 >
-                  Modify Role
+                  {commonItems.modifyrole}
                 </Button>
                 <OperateModal
                   title="Batch Modify Roles"
                   closable={false}
                   open={modalVisible}
+                  okText={commonItems.confirm}
+                  cancelText={commonItems.cancel}
                   onOk={handleModalOpen}
                   onCancel={handleModalClose}
                 >
@@ -525,7 +566,8 @@ const User = () => {
                     setModifyRoleOpen(true);
                   }}
                 >
-                  Modify Delete
+                  {commonItems.modifydelete}
+
                 </Button>
                 <OperateModal
                   open={modifyRoleOpen}
@@ -538,26 +580,28 @@ const User = () => {
                   }
                   footer={null}
                   closeIcon={null}
+                  okText={commonItems.confirm}
+                  cancelText={commonItems.cancel}
                 >
                   <Button
                     className="mt-[20px] ml-[150px]"
                     type="default"
                     onClick={cancel}
                   >
-                    Cancle
+                    {commonItems.cancel}
                   </Button>
                   <Button className="ml-4" type="primary" onClick={confirm}>
-                    Confirm
+                    {commonItems.confirm}
                   </Button>
                 </OperateModal>
               </div>
             </div>
           </div>
-          <div className="w-[960px] h-[350px]">
+          <div>
             <Flex gap="middle" vertical>
               <Table<DataType>
                 size={'middle'}
-                scroll={{ y: 'calc(100vh - 300px)' }}
+                scroll={{ y: 'calc(100vh - 300px)', x: 'calc(100vw-250px)' }}
                 pagination={{ pageSize: 5 }}
                 columns={columns}
                 dataSource={tabledata}
