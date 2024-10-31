@@ -71,7 +71,8 @@
   },
   "menu": {
     "log": "Log",
-    "user": "User"
+    "user": "User",
+    "teams": "Teams"
   },
   "tableItem":{
     "username": "USERNAME",

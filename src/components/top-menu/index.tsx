@@ -24,6 +24,7 @@ const TopMenu = () => {
   const menuItems = [
     // { label: t('home'), icon: 'HomeFilled', path: '/' },
     { label: t('menu.user'), icon: 'AlertFilled', path: '/user' },
+    { label: t('menu.teams'), icon: 'AlertFilled', path: '/teams' },
   ];
 
   return (

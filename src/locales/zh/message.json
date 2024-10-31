@@ -63,7 +63,9 @@
   },
   "menu": {
     "log": "日志",
-    "user": "用户"
+    "user": "用户",
+    "teams": "团队"
+
   },
   "tableItem":{
     "username": "用户名",
