@@ -17,16 +17,13 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { TableColumnsType } from 'antd';
 import CustomTable from '@/components/custom-table';
-
+import { useTranslation } from '@/utils/i18n';
 //接口
 interface DataType {
   key: string;
   name: string;
-  actions: string[];
   children?: DataType[];
-  description?: DataType[];
 
 }
 
@@ -75,32 +72,61 @@ const Teams = () => {
 
   const [addSubteammodalOpen, setAddSubteammodalOpen] = useState(false);
   const [renameteammodalOpen, setRenameteammodalOpen] = useState(false);
-  const [renamekey, setrenamekey] = useState<{ key: string }>()
+  const [renamekey, setRenamekey] = useState('1');
   const [form] = Form.useForm();
+  const [addsubteamkey, setAddsubteamkey] = useState('1');
+
+  const { t } = useTranslation();
+  const commonItems = {
+    search: t('common.search'),
+    cancel: t('common.cancel'),
+    confirm: t('common.confirm')
+  }
+
+  const tableItem = {
+    name: t('tableItem.name'),
+    actions: t('tableItem.actions')
+  }
+
+
+  const teamItem = {
+    addsubteams: t('teamItem.addsubteams'),
+    rename: t('teamItem.rename'),
+    delete: t('teamItem.delete'),
+    teams: t('teamItem.teams'),
+    teaminfo: t('teamItem.teaminfo'),
+
+  }
 
   //数据
-
   const columns: any = [
     { key: 'sort', align: 'center', width: 80, render: () => <DragHandle /> },
-    { title: 'Name', dataIndex: 'name', width: 500 },
+    { title: tableItem.name, dataIndex: 'name', width: 500 },
     {
-      title: 'Actions', dataIndex: 'actions', width: 250, render: (arr: string[], key:any) => <><Button type='link' onClick={() => { addsunteams() }}>
-        {arr[0]}
-      </Button> <Button type='link' onClick={() => { renameteams(key) }}>
-        {arr[1]}
-      </Button> <Button type='link' onClick={() => { deleteteams(key) }}>
-        {arr[2]}
-      </Button></>
+      title: tableItem.actions, dataIndex: 'actions', width: 250, render: (arr: string[], key: any) => <><Button className='mr-[8px]' type='link' onClick={() => { addsunteams(key) }}>
+        {teamItem.addsubteams}
+      </Button> <Button className='mr-[8px]' type='link' onClick={() => { renameteams(key) }}>
+        {teamItem.rename}
+      </Button> <Button className='mr-[8px]' type='link' onClick={() => { deleteteams(key) }}>
+        {teamItem.delete}
+      </Button>
+      </>
     }
   ];
 
   const initialData: DataType[] = [
-    { key: '1', name: 'Head Office', actions: ['Add Sub-Teams', 'Rename', 'Delete'], description: [{ key: '1-1', name: 'Head Office', actions: ['Add Sub-Teams', 'Rename', 'Delete'], description: [{ key: '1-1-1', name: 'Head Office', actions: ['Add Sub-Teams', 'Rename', 'Delete'] }] }] },
-    { key: '2', name: 'A Team', actions: ['Add Sub-Teams', 'Rename', 'Delete'], description: [{ key: '2-1', name: 'Head Office', actions: ['Add Sub-Teams', 'Rename', 'Delete'], description: [{ key: '2-1', name: 'name1', actions: ['Add Sub-Teams', 'Rename', 'Delete'] }, { key: '2-2', name: 'name2', actions: ['Add Sub-Teams', 'Rename', 'Delete'] }] }] },
-    { key: '3', name: 'B Team', actions: ['Add Sub-Teams', 'Rename', 'Delete'] },
+    {
+      key: '1', name: 'Head Office',
+      children: [{
+        key: '2', name: 'A Team',
+        children: [{ key: '3', name: 'A-A Team' }]
+      },
+      { key: '4', name: 'B Team', }]
+    },
+    { key: '5', name: 'Head' }
   ];
   const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
-  const [onlykeytable, setonlykeytable] = useState<string>((dataSource.length + 1).toString())
+  const [onlykeytable, setonlykeytable] = useState<string>('5');
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id) {
       setDataSource((prevState) => {
@@ -110,6 +136,7 @@ const Teams = () => {
       });
     }
   };
+  // const allKeys = collectKeysRecursive(dataSource);
 
   //useEffect函数
 
@@ -129,83 +156,141 @@ const Teams = () => {
     );
   };
 
+
+
+
+  const addNode = (treeData: DataType[], targetKey: string, newNode: DataType): DataType [] => {
+    return treeData.map(node => {
+      if (node.key === targetKey) {
+        return {
+          ...node,
+          children: [...(node.children || []), newNode]
+        };
+      } else if (node.children) {
+        return {
+          ...node,
+          children: addNode(node.children, targetKey, newNode)
+        };
+      }
+      return node;
+    });
+  };
+
   function onOkaddSubteam() {
-    alert(onlykeytable)
-    setDataSource([...dataSource, { key: onlykeytable.toString(), name: form.getFieldValue('teamname'), actions: ['Add Sub-Teams', 'Rename', 'Delete'] }])
-    setonlykeytable(onlykeytable + 1)
+    const newData = addNode(dataSource, addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname')})
+    setDataSource(newData);
+    const newkey = Number(onlykeytable) + 1;
+    setonlykeytable(newkey.toString())
     setAddSubteammodalOpen(false);
   }
 
-  function addsunteams() {
+  function addsunteams(key: { key: string }) {
     setAddSubteammodalOpen(true);
+    setAddsubteamkey(key.key);
     form.resetFields();
   }
 
+
+  const renameNode = (treeData: DataType[], targetKey: string, renameTeam: string): DataType [] => {
+    return treeData.map(node => {
+      if (node.key === targetKey) {
+        return {
+          ...node,
+          name: renameTeam
+        };
+      } else if (node.children) {
+        return {
+          ...node,
+          children: renameNode(node.children, targetKey, renameTeam)
+        };
+      }
+      return node;
+    });
+  };
+
+  const findNode = (treeData: DataType[], targetKey: string): DataType [] => {
+    return treeData.map(node => {
+      if (node.key === targetKey) {
+        form.setFieldsValue({ renameteam: node.name })
+      } else if (node.children) {
+        return {
+          ...node,
+          children: findNode(node.children, targetKey)
+        };
+      }
+      return node;
+    });
+  };
 
   function renameteams(key: { key: string }) {
     setRenameteammodalOpen(true);
-    setrenamekey(key);
-
+    setRenamekey(key.key);
     form.resetFields();
-    dataSource.map((item) => {
-      if (item.key === key?.key) {
-        form.setFieldsValue({ renameteam: item.name })
-      }
-    })
+    findNode(dataSource, key.key)
   }
 
+
+
   function onOkrenameteam() {
-    const newData = dataSource.map((item) => {
-      if (item.key === renamekey?.key) {
-        item.name = form.getFieldValue('renameteam');
-      }
-      return item
-    })
+    const newData = renameNode(dataSource, renamekey, form.getFieldValue('renameteam'))
     setDataSource(newData)
     setRenameteammodalOpen(false);
   }
 
-
+  const deleteNode = (treeData: DataType[], targetKey: string): DataType [] => {
+    return treeData.filter(node => node.key !== targetKey).map(node => {
+      if (node.children) {
+        return {
+          ...node,
+          children: deleteNode(node.children, targetKey)
+        };
+      }
+      return node;
+    });
+  };
   function deleteteams(key: { key: string }) {
-    const newData = dataSource.filter((item) => item.key !== key.key);
+    const newData = deleteNode(dataSource, key.key);
     setDataSource(newData)
   }
 
+  // function collectKeysRecursive(tree: DataType[]) {
+  //   const keys: [] = [];
+
+  //   function traverse(node: DataType) {
+  //     if (!node) return;
+  //     keys.push(node.key); // 收集当前节点的key
+  //     if (node.children && node.children.length > 0) {
+  //       node.children.forEach((child: DataType) => traverse(child)); // 递归遍历子节点
+  //     }
+  //   }
+
+  //   tree.forEach(rootNode => traverse(rootNode)); // 假设tree是一个包含根节点的数组
+  //   return keys;
+  // }
+
+
   return (
     <div className={`${teamsStyle.height}`} >
-      <IntroductionInfo title="Teams" message="You can manage user organizations, including adding and adjusting the organizational structure." />
-      <div className='w-full h-[24px] mt-[12px] mb-[12px]'><Input className={`${teamsStyle.inputwidth}`} placeholder="Search..." size='small' /></div>
+      <IntroductionInfo title={teamItem.teams} message={teamItem.teaminfo} />
+      <div className='w-full h-[24px] mt-[19px] mb-[19px]'><Input className={`${teamsStyle.inputwidth}`} placeholder={`${commonItems.search}...`} size='small' /></div>
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-        <SortableContext items={dataSource.map((i) => i.key)} strategy={verticalListSortingStrategy}>
+        <SortableContext items={['1','2','3','4','5']} strategy={verticalListSortingStrategy}>
           <CustomTable
             rowKey="key"
             pagination={false}
             size="small"
+            scroll={{ y: 'calc(100vh - 300px)', x: 'calc(100vw-100px)' }}
             components={{ body: { row: Row } }}
             columns={columns}
             expandable={{
-              expandedRowRender: (record) => <>
-                {record.description && record.description.length > 0 && (
-                  <CustomTable
-                    rowKey="key"
-                    showHeader={false}
-                    pagination={false}
-                    components={{ body: { row: Row } }}
-                    columns={columns}
-                    dataSource={record.description}
-                  />
-                )}
-              </>,
-              rowExpandable: () => { return true },
               expandIcon: ({ expanded, onExpand, record }) =>
                 expanded ? (
                   <CaretDownOutlined onClick={e => onExpand(record, e)} />
                 ) : (
                   <CaretRightOutlined onClick={e => onExpand(record, e)} />
                 ),
-              indentSize: 16,
+              indentSize: 22,
             }}
-
             dataSource={dataSource}
           />
         </SortableContext>
@@ -213,6 +298,8 @@ const Teams = () => {
       <OperateModal
         title={'Add Sub-team'}
         closable={false}
+        okText={commonItems.confirm}
+        cancelText={commonItems.cancel}
         open={addSubteammodalOpen}
         onOk={() => onOkaddSubteam()}
         onCancel={() => setAddSubteammodalOpen(false)}
@@ -226,6 +313,8 @@ const Teams = () => {
       <OperateModal
         title={'Rename'}
         closable={false}
+        okText={commonItems.confirm}
+        cancelText={commonItems.cancel}
         open={renameteammodalOpen}
         onOk={() => onOkrenameteam()}
         onCancel={() => setRenameteammodalOpen(false)}

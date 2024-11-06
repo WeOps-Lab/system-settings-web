@@ -84,5 +84,12 @@
     "actions": "ACTIONS",
     "administrator": "Administrator",
     "normalusers": "Normal Users"
+  },
+  "teamItem":{
+    "addsubteams":"Add Sub-Teams",
+    "rename":"Rename",
+    "delete":"Delete",
+    "teams":"Teams",
+    "teaminfo":"You can manage user organizations, including adding and adjusting the organizational structure."
   }
 }

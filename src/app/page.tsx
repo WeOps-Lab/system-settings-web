@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation';
 
 export default function HomePage() {
-  redirect('/teams');
+  redirect('/home');
 
   return null;
 }
