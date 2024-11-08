@@ -11,7 +11,6 @@ import { DndContext } from '@dnd-kit/core';
 import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
-  arrayMove,
   SortableContext,
   useSortable,
   verticalListSortingStrategy,
@@ -24,7 +23,6 @@ interface DataType {
   key: string;
   name: string;
   children?: DataType[];
-
 }
 
 interface RowContextProps {
@@ -74,7 +72,7 @@ const Teams = () => {
   const [renameteammodalOpen, setRenameteammodalOpen] = useState(false);
   const [renamekey, setRenamekey] = useState('1');
   const [form] = Form.useForm();
-  const [addsubteamkey, setAddsubteamkey] = useState('1');
+  const [addsubteamkey, setAddsubteamkey] = useState('6');
 
   const { t } = useTranslation();
   const commonItems = {
@@ -95,15 +93,14 @@ const Teams = () => {
     delete: t('teamItem.delete'),
     teams: t('teamItem.teams'),
     teaminfo: t('teamItem.teaminfo'),
-
   }
 
   //数据
   const columns: any = [
-    { key: 'sort', align: 'center', width: 80, render: () => <DragHandle /> },
+    { key: 'sort', align: 'center', width: 80, render: (key: DataType) => key.key !== '1' ? <DragHandle /> : null },
     { title: tableItem.name, dataIndex: 'name', width: 500 },
     {
-      title: tableItem.actions, dataIndex: 'actions', width: 250, render: (arr: string[], key: any) => <><Button className='mr-[8px]' type='link' onClick={() => { addsunteams(key) }}>
+      title: tableItem.actions, dataIndex: 'actions', width: 250, render: (arr: string[], key: DataType) => <><Button className='mr-[8px]' type='link' onClick={() => { addsubteams(key) }}>
         {teamItem.addsubteams}
       </Button> <Button className='mr-[8px]' type='link' onClick={() => { renameteams(key) }}>
         {teamItem.rename}
@@ -122,21 +119,20 @@ const Teams = () => {
         children: [{ key: '3', name: 'A-A Team' }]
       },
       { key: '4', name: 'B Team', }]
-    },
-    { key: '5', name: 'Head' }
+    }
   ];
   const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
-  const [onlykeytable, setonlykeytable] = useState<string>('5');
+  const [onlykeytable, setonlykeytable] = useState<string>('6');
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id) {
-      setDataSource((prevState) => {
-        const activeIndex = prevState.findIndex((record) => record.key === active?.id);
-        const overIndex = prevState.findIndex((record) => record.key === over?.id);
-        return arrayMove(prevState, activeIndex, overIndex);
-      });
+      const ActiveNode = findNodeByKey(dataSource, active.id.toString());
+      const OverNode = findNodeByKey(dataSource, over?.id.toString() as string);
+      let temp = updateNodeData(dataSource, active.id.toString(), OverNode as DataType);
+      temp = updateNodeData(temp, over?.id.toString() as string, ActiveNode as DataType);
+      setDataSource(temp);
     }
   };
-  // const allKeys = collectKeysRecursive(dataSource);
+
 
   //useEffect函数
 
@@ -159,7 +155,7 @@ const Teams = () => {
 
 
 
-  const addNode = (treeData: DataType[], targetKey: string, newNode: DataType): DataType [] => {
+  const addNode = (treeData: DataType[], targetKey: string, newNode: DataType): DataType[] => {
     return treeData.map(node => {
       if (node.key === targetKey) {
         return {
@@ -177,21 +173,21 @@ const Teams = () => {
   };
 
   function onOkaddSubteam() {
-    const newData = addNode(dataSource, addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname')})
+    const newData = addNode(dataSource, addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname') })
     setDataSource(newData);
     const newkey = Number(onlykeytable) + 1;
     setonlykeytable(newkey.toString())
     setAddSubteammodalOpen(false);
   }
 
-  function addsunteams(key: { key: string }) {
+  function addsubteams(key: { key: string }) {
     setAddSubteammodalOpen(true);
     setAddsubteamkey(key.key);
     form.resetFields();
   }
 
 
-  const renameNode = (treeData: DataType[], targetKey: string, renameTeam: string): DataType [] => {
+  const renameNode = (treeData: DataType[], targetKey: string, renameTeam: string): DataType[] => {
     return treeData.map(node => {
       if (node.key === targetKey) {
         return {
@@ -208,7 +204,7 @@ const Teams = () => {
     });
   };
 
-  const findNode = (treeData: DataType[], targetKey: string): DataType [] => {
+  const findNode = (treeData: DataType[], targetKey: string): DataType[] => {
     return treeData.map(node => {
       if (node.key === targetKey) {
         form.setFieldsValue({ renameteam: node.name })
@@ -221,6 +217,39 @@ const Teams = () => {
       return node;
     });
   };
+
+  function findNodeByKey(tree: DataType[], key: string): DataType | null {
+    for (const node of tree) {
+      if (node.key === key) {
+        return node;
+      }
+      if (node.children) {
+        const foundInChildren = findNodeByKey(node.children, key);
+        if (foundInChildren) {
+          return foundInChildren;
+        }
+      }
+    }
+    return null;
+  }
+
+  const updateNodeData = (tree: DataType[], activeID: string, activeData: DataType): DataType[] => {
+    return tree.map(node => {
+      if (node.key === activeID) {
+        return {
+          ...node,
+          name: activeData.name,
+          children: activeData.children
+        };
+      } else if (node.children) {
+        return {
+          ...node,
+          children: updateNodeData(node.children, activeID, activeData)
+        };
+      }
+      return node;
+    });
+  }
 
   function renameteams(key: { key: string }) {
     setRenameteammodalOpen(true);
@@ -237,7 +266,7 @@ const Teams = () => {
     setRenameteammodalOpen(false);
   }
 
-  const deleteNode = (treeData: DataType[], targetKey: string): DataType [] => {
+  const deleteNode = (treeData: DataType[], targetKey: string): DataType[] => {
     return treeData.filter(node => node.key !== targetKey).map(node => {
       if (node.children) {
         return {
@@ -253,20 +282,6 @@ const Teams = () => {
     setDataSource(newData)
   }
 
-  // function collectKeysRecursive(tree: DataType[]) {
-  //   const keys: [] = [];
-
-  //   function traverse(node: DataType) {
-  //     if (!node) return;
-  //     keys.push(node.key); // 收集当前节点的key
-  //     if (node.children && node.children.length > 0) {
-  //       node.children.forEach((child: DataType) => traverse(child)); // 递归遍历子节点
-  //     }
-  //   }
-
-  //   tree.forEach(rootNode => traverse(rootNode)); // 假设tree是一个包含根节点的数组
-  //   return keys;
-  // }
 
 
   return (
@@ -274,11 +289,12 @@ const Teams = () => {
       <IntroductionInfo title={teamItem.teams} message={teamItem.teaminfo} />
       <div className='w-full h-[24px] mt-[19px] mb-[19px]'><Input className={`${teamsStyle.inputwidth}`} placeholder={`${commonItems.search}...`} size='small' /></div>
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-        <SortableContext items={['1','2','3','4','5']} strategy={verticalListSortingStrategy}>
+        <SortableContext items={['1', '2', '3', '4', '5']} strategy={verticalListSortingStrategy}>
           <CustomTable
             rowKey="key"
             pagination={false}
             size="small"
+            expandIconColumnIndex={1}
             scroll={{ y: 'calc(100vh - 300px)', x: 'calc(100vw-100px)' }}
             components={{ body: { row: Row } }}
             columns={columns}
