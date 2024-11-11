@@ -18,6 +18,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import CustomTable from '@/components/custom-table';
 import { useTranslation } from '@/utils/i18n';
+import { AnyObject } from 'antd/es/_util/type';
 //接口
 interface DataType {
   key: string;
@@ -73,6 +74,8 @@ const Teams = () => {
   const [renamekey, setRenamekey] = useState('1');
   const [form] = Form.useForm();
   const [addsubteamkey, setAddsubteamkey] = useState('6');
+  const [sortablearr, setSortablearr] = useState(['1', '2', '3', '4', '5']);
+  const [expandedRowKeysarr, setExpandedRowKeys] = useState(['0']);
 
   const { t } = useTranslation();
   const commonItems = {
@@ -110,7 +113,6 @@ const Teams = () => {
       </>
     }
   ];
-
   const initialData: DataType[] = [
     {
       key: '1', name: 'Head Office',
@@ -118,22 +120,23 @@ const Teams = () => {
         key: '2', name: 'A Team',
         children: [{ key: '3', name: 'A-A Team' }]
       },
-      { key: '4', name: 'B Team', }]
+      { key: '4', name: 'B Team', children: [{ key: '5', name: 'B-B Team' }] }]
     }
   ];
   const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
   const [onlykeytable, setonlykeytable] = useState<string>('6');
   const onDragEnd = ({ active, over }: DragEndEvent) => {
-    if (active.id !== over?.id) {
+    if (active.id !== over?.id && over?.id) {
       const ActiveNode = findNodeByKey(dataSource, active.id.toString());
-      const OverNode = findNodeByKey(dataSource, over?.id.toString() as string);
-      let temp = updateNodeData(dataSource, active.id.toString(), OverNode as DataType);
-      temp = updateNodeData(temp, over?.id.toString() as string, ActiveNode as DataType);
-      setDataSource(temp);
+      if (!isAncestor(dataSource, active.id.toString(), over?.id.toString() as string)) {
+        let temp = deleteNode(dataSource, active.id.toString());
+        setDataSource(temp)
+        temp = addNode(temp, over?.id.toString() as string, ActiveNode as DataType)
+        setDataSource(temp);
+        setExpandedRowKeys([...expandedRowKeysarr, over?.id.toString()])
+      }
     }
   };
-
-
   //useEffect函数
 
 
@@ -151,9 +154,6 @@ const Teams = () => {
       />
     );
   };
-
-
-
 
   const addNode = (treeData: DataType[], targetKey: string, newNode: DataType): DataType[] => {
     return treeData.map(node => {
@@ -175,6 +175,7 @@ const Teams = () => {
   function onOkaddSubteam() {
     const newData = addNode(dataSource, addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname') })
     setDataSource(newData);
+    setSortablearr([...sortablearr, onlykeytable])
     const newkey = Number(onlykeytable) + 1;
     setonlykeytable(newkey.toString())
     setAddSubteammodalOpen(false);
@@ -282,17 +283,57 @@ const Teams = () => {
     setDataSource(newData)
   }
 
+  const isAncestor = (treeData: DataType[], nodeAKey: string, nodeBKey: string): boolean => {
+    const findInSubtree = (subtree: DataType[], targetKey: string) => {
+      for (const node of subtree) {
+        if (node.key === targetKey) {
+          return true;
+        } else if (node.children) {
+          if (findInSubtree(node.children, targetKey)) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    for (const rootNode of treeData) {
+      if (rootNode.key === nodeAKey) {
+        if (findInSubtree(rootNode.children || [], nodeBKey)) {
+          return true;
+        }
+      }
+      else if (rootNode.children) {
+        for (const node of rootNode.children) {
+          if (isAncestor([node], nodeAKey, nodeBKey)) {
+            return true;
+          }
+        }
+      }
 
+    }
+    return false;
+  };
+
+  function onExpand(expanded: boolean, record: AnyObject) {
+    if (expanded) {
+      setExpandedRowKeys([...expandedRowKeysarr, record.key])
+    } else {
+      setExpandedRowKeys(expandedRowKeysarr.filter(item => item !== record.key))
+    }
+    console.log('test', expanded, record)
+  }
 
   return (
     <div className={`${teamsStyle.height}`} >
       <IntroductionInfo title={teamItem.teams} message={teamItem.teaminfo} />
       <div className='w-full h-[24px] mt-[19px] mb-[19px]'><Input className={`${teamsStyle.inputwidth}`} placeholder={`${commonItems.search}...`} size='small' /></div>
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
-        <SortableContext items={['1', '2', '3', '4', '5']} strategy={verticalListSortingStrategy}>
+        <SortableContext items={[]} strategy={verticalListSortingStrategy}>
           <CustomTable
             rowKey="key"
             pagination={false}
+            expandedRowKeys={expandedRowKeysarr}
+            onExpand={(expanded, record) => { onExpand(expanded, record) }}
             size="small"
             expandIconColumnIndex={1}
             scroll={{ y: 'calc(100vh - 300px)', x: 'calc(100vw-100px)' }}

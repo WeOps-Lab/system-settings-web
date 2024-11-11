@@ -205,7 +205,7 @@ const User = () => {
     (_, index) => ({
       key: index,
       username: `username${index}`,
-      name: `张三${index}`,
+      name: `zhangsan${index}`,
       email: `email${index}@gmail.com`,
       number: 'Administrator',
       team: 'Team A',
@@ -348,10 +348,10 @@ const User = () => {
         message="Display all information.You can maintain user information and assign roles."
         title="Users"
       />
-      {/* 左边 */}
-      <div className={`flex overflow-hidden`} style={{ height: 'calc(100vh-141px)' }}>
-        <div className="w-[250px] flex-shrink-0 flex flex-col justify-items-center items-center r-bg-color mt-4 rounded-md mr-3">
-          <Input className="w-5/6 mt-2" placeholder={`${commonItems.search}...`} />
+      <div className={`flex overflow-hidden`} style={{ height: 'calc(100vh - 160px)' }}>
+        {/* 左边 */}
+        <div className={`${userInfoStyle.bgColor} w-[230px] flex-shrink-0 flex flex-col justify-items-center items-center r-bg-color mt-4 rounded-md mr-3`}>
+          <Input className="w-5/6 mt-3 h-[27px]" placeholder={`${commonItems.search}...`} />
           <ConfigProvider
             theme={{
               token: {
@@ -360,7 +360,7 @@ const User = () => {
             }}
           >
             <DirectoryTree
-              className="w-[230px] h-[320px] mt-2 overflow-auto"
+              className="w-[230px] mt-4 overflow-auto"
               multiple
               showIcon={false}
               defaultExpandAll
@@ -369,11 +369,11 @@ const User = () => {
           </ConfigProvider>
         </div>
         {/* 右边 */}
-        <div className="ml-auto mt-4 flex-1" style={{ height: 'calc(100vh-181px)', width: 'calc(100vw-278px)' }}>
+        <div className="ml-auto mt-4 flex-1 min-w-[640px]" style={{ height: 'calc(100vh - 170px)', width: 'calc(100vw - 310px)' }}>
           <div className="w-full h-11 mb-2">
             <div className="flex justify-between">
               <div className="w-[200px] h-[40px]">
-                <Input className="h-6 mt-2" placeholder={`${commonItems.search}...`} />
+                <Input className="h-6 mt-4" placeholder={`${commonItems.search}...`} />
               </div>
               <div className="flex">
                 <Button className="mr-1 mt-1" type="primary" onClick={addData}>
@@ -389,19 +389,25 @@ const User = () => {
                   onCancel={() => setAddModalOpen(false)}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item name="username" label={`${tableItems.username}*`} colon={false}>
+                    <Form.Item
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
+                      name="username" label={`${tableItems.username}*`} colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      className="ml-[30px]"
                       name="name"
                       label={`${tableItems.name}`}
                       colon={false}
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                     >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      className="ml-[30px]"
+
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                       name="email"
                       label={`${tableItems.email}`}
                       colon={false}
@@ -409,7 +415,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      className="ml-[12px]"
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                       name="number"
                       label={`${tableItems.number}`}
                       colon={false}
@@ -417,7 +424,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      className="ml-[27px]"
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                       name="team"
                       label={`${tableItems.team}*`}
                       colon={false}
@@ -458,13 +466,16 @@ const User = () => {
                   onCancel={() => oneditCancel()}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item name="username" label={`${tableItems.username}*`} colon={false}>
-                      <Tag className="w-[400px] h-[34px] pt-1">
-                        {edituseName}
-                      </Tag>
+                    <Form.Item
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
+                      name="username" label={`${tableItems.username}*`} colon={false}>
+
+                      <Input disabled={true} placeholder={edituseName} ></Input>
                     </Form.Item>
                     <Form.Item
-                      className="ml-[30px]"
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                       name="name"
                       label={`${tableItems.name}`}
                       colon={false}
@@ -472,7 +483,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      className="ml-[30px]"
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                       name="email"
                       label={`${tableItems.email}`}
                       colon={false}
@@ -480,7 +492,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      className="ml-[15px]"
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                       name="number"
                       label={`${tableItems.number}`}
                       colon={false}
@@ -488,7 +501,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      className="ml-[25px]"
+                      labelCol={{ span: 7 }}
+                      wrapperCol={{ span: 16 }}
                       name="team"
                       label={`${tableItems.team}*`}
                       colon={false}
@@ -597,11 +611,11 @@ const User = () => {
               </div>
             </div>
           </div>
-          <div>
+          <div className={`${userInfoStyle.bgColor} pt-[29px] pl-[9px] pr-[9px]`}>
             <Flex gap="middle" vertical>
               <Table<DataType>
                 size={'middle'}
-                scroll={{ y: 'calc(100vh - 330px)', x: 'calc(100vw-250px)' }}
+                scroll={{ y: 'calc(100vh - 360px)', x: 'calc(100vw - 250px)' }}
                 pagination={{ pageSize: 5 }}
                 columns={columns}
                 dataSource={tabledata}
