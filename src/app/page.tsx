@@ -2,6 +2,7 @@
 import { redirect } from 'next/navigation';
 
 export default function HomePage() {
-  redirect('/user');
+  redirect('/home');
+
   return null;
 }
