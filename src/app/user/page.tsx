@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { Input, Form, Radio, Select } from 'antd';
+import { Input, Form, Radio, Select, message, Popconfirm } from 'antd';
 import { Tree } from 'antd';
 import { Button, ConfigProvider } from 'antd';
 import { useState, useEffect, useRef } from 'react';
@@ -13,6 +13,7 @@ import type { TreeDataNode } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
 import userInfoStyle from './index.module.less';
 import { useTranslation } from '@/utils/i18n';
+import useApiClient from '@/utils/request';
 
 
 
@@ -25,6 +26,39 @@ interface DataType {
   number: string;
   team: string;
   role: string;
+}
+
+interface Access {
+  manageGroupMembership: boolean;
+  view: boolean;
+  mapRoles: boolean;
+  impersonate: boolean;
+  manage: boolean;
+}
+
+// 定义 BruteForceStatus 接口
+interface BruteForceStatus {
+  numFailures: number;
+  disabled: boolean;
+  lastIPFailure: string;
+  lastFailure: number;
+}
+
+// 定义 User 接口
+interface User {
+  id: string;
+  createdTimestamp: number;
+  username: string;
+  enabled: boolean;
+  emailVerified: boolean;
+  firstName: string;
+  lastName: string;
+  Number: string;
+  email: string;
+  access: Access;
+  team: string;
+  role: string;
+  bruteForceStatus: BruteForceStatus;
 }
 
 type TableRowSelection<T extends object = object> =
@@ -50,6 +84,7 @@ const User = () => {
   const [onlykeytable, setOnlykeytable] = useState<number>(tabledata.length);
   const modifydeleteuseref = useRef<HTMLButtonElement>(null);
   const modifyroleuseref = useRef<HTMLButtonElement>(null);
+  const { get, del, post, put } = useApiClient();
 
 
   const { t } = useTranslation();
@@ -140,12 +175,13 @@ const User = () => {
   // 表格数据
   const columns: TableColumnsType<DataType> = [
     {
-      title: tableItems.username,
+      title: 'Username',
       dataIndex: 'username',
+      width: 240,
       render: (text) => {
         const color = getRandomColor();
         return (
-          <div className="flex">
+          <div className="flex" style={{ height: '17px', lineHeight: '17px' }}>
             <span
               className="h-5 w-5 rounded-[10px] text-center text-[12px] mr-1"
               style={{ color: '#ffffff', backgroundColor: color }}
@@ -157,12 +193,12 @@ const User = () => {
         );
       },
     },
-    { title: tableItems.name, dataIndex: 'name' },
-    { title: tableItems.email, dataIndex: 'email' },
-    { title: tableItems.number, dataIndex: 'number' },
-    { title: tableItems.team, dataIndex: 'team' },
+    { title: 'Name', dataIndex: 'name' },
+    { title: 'Email', dataIndex: 'email', width: 240 },
+    { title: 'Number', dataIndex: 'number' },
+    { title: 'Team', dataIndex: 'team' },
     {
-      title: tableItems.role,
+      title: 'Role',
       dataIndex: 'role',
       render: (text) => {
         const color = text === 'Administrator' ? 'green' : 'processing';
@@ -170,32 +206,34 @@ const User = () => {
       },
     },
     {
-      title: tableItems.actions,
-
+      title: 'Actions',
       dataIndex: 'key',
+      width: 150,
       render: (key) => {
         return (
-          <Space size="middle">
+          <><Button
+            onClick={() => {
+              editeuser(key);
+            }}
+            color="primary"
+            variant="link"
+          >
+            Edit
+          </Button><Popconfirm
+            title="Do you Want to delete these item?"
+            description="After deletion,the data cannot be recovered."
+            onConfirm={() => { deleteuse(key); }}
+            onCancel={deletecancel}
+            okText="OK"
+            cancelText="Cancel"
+          >
             <Button
-              onClick={() => {
-                editeuser(key);
-              }}
               color="primary"
               variant="link"
             >
-              {commonItems.edit}
+                Delete
             </Button>
-            <Button
-              onClick={() => {
-                deleteuse(key);
-              }}
-              color="primary"
-              variant="link"
-            >
-              {commonItems.delete}
-
-            </Button>
-          </Space>
+          </Popconfirm></>
         );
       },
     },
@@ -229,6 +267,12 @@ const User = () => {
   }, []);
 
   useEffect(() => {
+    getuserslist();
+
+  }, []);
+
+
+  useEffect(() => {
     selectedRowKeys.length === 0
       ? modifydeleteuseref.current?.setAttribute('disabled', 'true')
       : modifydeleteuseref.current?.removeAttribute('disabled');
@@ -245,6 +289,27 @@ const User = () => {
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
+  //获取用户列表
+  async function getuserslist() {
+    const userslistdata = await get('/lite/user/', { params: { page: 1, page_size: 10 } });
+    const temparr: DataType[] = [];
+    userslistdata.forEach((item: User) => {
+      temparr.push({
+        key: item.id,
+        username: item.username,
+        name: item.firstName,
+        email: item.email,
+        number: item.Number,
+        team: item.team,
+        role: item.role
+
+      });
+
+
+    });
+    setTableData(temparr);
+
+  }
 
   const rowSelection: TableRowSelection<DataType> = {
     selectedRowKeys,
@@ -311,6 +376,12 @@ const User = () => {
   const cancel: PopconfirmProps['onCancel'] = () => {
     setModifyRoleOpen(false);
   };
+  //调用接口编辑用户
+  async function editeuserApi(id: number) {
+    await put(`/lite/user/${id}/`, {
+      ...form.getFieldsValue()
+    })
+  }
   //编辑用户
   function editeuser(key: number) {
     setEditkey(key);
@@ -329,6 +400,7 @@ const User = () => {
         : item;
     });
     setTableData(newarr);
+    editeuserApi(editkey)
     setEditmodalOpen(false);
     setSelectedRowKeys([]);
   }
@@ -336,14 +408,27 @@ const User = () => {
   function oneditCancel() {
     setEditmodalOpen(false);
   }
+  const [messageApi, contextHolder] = message.useMessage();
+  async function deleteuser(key: number) {
+    const delmessage = await del(`/lite/user/${key}/`);
+    message.success(delmessage);
+    messageApi.info(delmessage.repmessage);
+  }
+
   //删除用户
   function deleteuse(key: number) {
+    deleteuser(key);
     const newData = tabledata.filter((item) => item.key !== key);
     setTableData(newData);
   }
 
+  const deletecancel: PopconfirmProps['onCancel'] = () => {
+    message.error('Delete cancel');
+  };
+
   return (
     <div className={`${userInfoStyle.userInfo} ${userInfoStyle.bgHeight}`}>
+      {contextHolder}
       <IntroductionInfo
         message="Display all information.You can maintain user information and assign roles."
         title="Users"

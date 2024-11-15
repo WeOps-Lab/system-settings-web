@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useContext, useMemo } from 'react';
-import { Button, Input, Form } from 'antd';
+import React, { useState, useContext, useMemo, useEffect, Children } from 'react';
+import { Button, Input, Form, message, Popconfirm } from 'antd';
 import 'antd/dist/reset.css';
 import IntroductionInfo from '@/components/introduction-info';
 import OperateModal from '@/components/operate-modal';
@@ -9,6 +9,7 @@ import { CaretDownOutlined, CaretRightOutlined, HolderOutlined } from '@ant-desi
 import type { DragEndEvent } from '@dnd-kit/core';
 import { DndContext } from '@dnd-kit/core';
 import type { SyntheticListenerMap } from '@dnd-kit/core/dist/hooks/utilities';
+import type { PopconfirmProps } from 'antd';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import {
   SortableContext,
@@ -19,6 +20,7 @@ import { CSS } from '@dnd-kit/utilities';
 import CustomTable from '@/components/custom-table';
 import { useTranslation } from '@/utils/i18n';
 import { AnyObject } from 'antd/es/_util/type';
+import useApiClient from '@/utils/request'
 //接口
 interface DataType {
   key: string;
@@ -33,6 +35,31 @@ interface RowContextProps {
 
 interface RowProps extends React.HTMLAttributes<HTMLTableRowElement> {
   'data-row-key': string;
+}
+
+interface Access {
+  view: boolean;
+  viewMembers: boolean;
+  manageMembers: boolean;
+  manage: boolean;
+  manageMembership: boolean;
+}
+
+interface SubGroup {
+  id: string;
+  name: string;
+  path: string;
+  subGroupCount: number;
+  subGroups: SubGroup[];
+  access: Access;
+}
+
+interface Group {
+  id: string;
+  name: string;
+  path: string;
+  subGroupCount: number;
+  subGroups: SubGroup[];
 }
 
 
@@ -77,6 +104,10 @@ const Teams = () => {
   const [sortablearr, setSortablearr] = useState(['1', '2', '3', '4', '5']);
   const [expandedRowKeysarr, setExpandedRowKeys] = useState(['0']);
 
+  const [datasourcefatherid, setDatasourcefatherid] = useState(['1']);
+  const { get } = useApiClient();
+
+
   const { t } = useTranslation();
   const commonItems = {
     search: t('common.search'),
@@ -100,36 +131,39 @@ const Teams = () => {
 
   //数据
   const columns: any = [
-    { key: 'sort', align: 'center', width: 80, render: (key: DataType) => key.key !== '1' ? <DragHandle /> : null },
+    { key: 'sort', align: 'center', width: 80, render: (key: DataType) => (!datasourcefatherid.includes(key.key) ? true : false) ? <DragHandle /> : null },
     { title: tableItem.name, dataIndex: 'name', width: 500 },
     {
       title: tableItem.actions, dataIndex: 'actions', width: 250, render: (arr: string[], key: DataType) => <><Button className='mr-[8px]' type='link' onClick={() => { addsubteams(key) }}>
         {teamItem.addsubteams}
       </Button> <Button className='mr-[8px]' type='link' onClick={() => { renameteams(key) }}>
         {teamItem.rename}
-      </Button> <Button className='mr-[8px]' type='link' onClick={() => { deleteteams(key) }}>
-        {teamItem.delete}
       </Button>
+      <Popconfirm
+        title="Do you Want to delete these item?"
+        description="After deletion,the data cannot be recovered."
+        onConfirm={() => { deleteteams(key) }}
+        onCancel={deletecancel}
+        okText="OK"
+        cancelText="Cancel"
+      >
+        <Button className='mr-[8px]' type='link'>
+          {teamItem.delete}
+        </Button>
+      </Popconfirm>
+
+
       </>
     }
   ];
-  const initialData: DataType[] = [
-    {
-      key: '1', name: 'Head Office',
-      children: [{
-        key: '2', name: 'A Team',
-        children: [{ key: '3', name: 'A-A Team' }]
-      },
-      { key: '4', name: 'B Team', children: [{ key: '5', name: 'B-B Team' }] }]
-    }
-  ];
-  const [dataSource, setDataSource] = React.useState<DataType[]>(initialData);
+  const [dataSource, setDataSource] = React.useState<DataType[]>();
   const [onlykeytable, setonlykeytable] = useState<string>('6');
+
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id && over?.id) {
-      const ActiveNode = findNodeByKey(dataSource, active.id.toString());
-      if (!isAncestor(dataSource, active.id.toString(), over?.id.toString() as string)) {
-        let temp = deleteNode(dataSource, active.id.toString());
+      const ActiveNode = findNodeByKey(dataSource as DataType[], active.id.toString());
+      if (!isAncestor(dataSource as DataType[], active.id.toString(), over?.id.toString() as string)) {
+        let temp = deleteNode(dataSource as DataType[], active.id.toString());
         setDataSource(temp)
         temp = addNode(temp, over?.id.toString() as string, ActiveNode as DataType)
         setDataSource(temp);
@@ -137,7 +171,13 @@ const Teams = () => {
       }
     }
   };
+
+
   //useEffect函数
+  useEffect(() => {
+    getorganizationaldata();
+  }, [])
+
 
 
   //普通函数
@@ -154,6 +194,21 @@ const Teams = () => {
       />
     );
   };
+  //获取组织数据
+  async function getorganizationaldata() {
+    const data = await get('/lite/group/', {
+      params: {
+        max: 11
+      },
+    });
+    const arr = transformGroups(data);
+    setDataSource(arr);
+    const datasourcefatherid: string[] = []
+    arr.forEach((item: DataType) => {
+      datasourcefatherid.push(item.key);
+    });
+    setDatasourcefatherid(datasourcefatherid)
+  }
 
   const addNode = (treeData: DataType[], targetKey: string, newNode: DataType): DataType[] => {
     return treeData.map(node => {
@@ -173,7 +228,7 @@ const Teams = () => {
   };
 
   function onOkaddSubteam() {
-    const newData = addNode(dataSource, addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname') })
+    const newData = addNode(dataSource as DataType[], addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname') })
     setDataSource(newData);
     setSortablearr([...sortablearr, onlykeytable])
     const newkey = Number(onlykeytable) + 1;
@@ -256,13 +311,13 @@ const Teams = () => {
     setRenameteammodalOpen(true);
     setRenamekey(key.key);
     form.resetFields();
-    findNode(dataSource, key.key)
+    findNode(dataSource as DataType[], key.key)
   }
 
 
 
   function onOkrenameteam() {
-    const newData = renameNode(dataSource, renamekey, form.getFieldValue('renameteam'))
+    const newData = renameNode(dataSource as DataType[], renamekey, form.getFieldValue('renameteam'))
     setDataSource(newData)
     setRenameteammodalOpen(false);
   }
@@ -279,8 +334,9 @@ const Teams = () => {
     });
   };
   function deleteteams(key: { key: string }) {
-    const newData = deleteNode(dataSource, key.key);
-    setDataSource(newData)
+    const newData = deleteNode(dataSource as DataType[], key.key);
+    setDataSource(newData);
+    message.success('Delete success');
   }
 
   const isAncestor = (treeData: DataType[], nodeAKey: string, nodeBKey: string): boolean => {
@@ -322,6 +378,24 @@ const Teams = () => {
     }
     console.log('test', expanded, record)
   }
+
+  const deletecancel: PopconfirmProps['onCancel'] = () => {
+    message.error('Delete cancel');
+  };
+
+  const transformGroups = (groups: Group[]): DataType[] => {
+    return groups.map((group: { id: string; name: string; subGroups: Group[] | []; }) => {
+      return {
+        key: group.id,
+        name: group.name,
+        children: group.subGroups && group.subGroups.length > 0
+          ? transformGroups(group.subGroups)
+          : []
+      };
+    });
+  };
+
+
 
   return (
     <div className={`${teamsStyle.height}`} >
