@@ -1,6 +1,6 @@
 .userInfo {
     background-color: var(background-color);
-
+    font-weight: 300;
     :global {
         .ant-tree-node-selected {
             color: var(--color-primary) !important;
@@ -11,6 +11,9 @@
                 color: var(--color-primary) !important;
             }
         }
+        .ant-table-thead > tr > th {
+            border-left: none !important; 
+          }
     }
 }
 
@@ -23,4 +26,15 @@
 .bgColor {
     background-color: var(--color-bg);
     border-radius: 6px;
+}
+.removeSingleChoiceInterval{
+    :global{
+        
+        .ant-radio-wrapper{
+            flex:0.4 !important;
+            justify-content: flex-start !important;
+        }
+        
+        
+    }
 }

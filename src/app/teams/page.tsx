@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useContext, useMemo, useEffect, Children } from 'react';
-import { Button, Input, Form, message, Popconfirm } from 'antd';
+import { Button, Input, Form, message, Popconfirm,ConfigProvider } from 'antd';
 import 'antd/dist/reset.css';
 import IntroductionInfo from '@/components/introduction-info';
 import OperateModal from '@/components/operate-modal';
@@ -20,7 +20,8 @@ import { CSS } from '@dnd-kit/utilities';
 import CustomTable from '@/components/custom-table';
 import { useTranslation } from '@/utils/i18n';
 import { AnyObject } from 'antd/es/_util/type';
-import useApiClient from '@/utils/request'
+import useApiClient from '@/utils/request';
+import { v4 as uuidv4 } from 'uuid';
 //接口
 interface DataType {
   key: string;
@@ -105,7 +106,7 @@ const Teams = () => {
   const [expandedRowKeysarr, setExpandedRowKeys] = useState(['0']);
 
   const [datasourcefatherid, setDatasourcefatherid] = useState(['1']);
-  const { get } = useApiClient();
+  const { get, del, put, post } = useApiClient();
 
 
   const { t } = useTranslation();
@@ -131,30 +132,38 @@ const Teams = () => {
 
   //数据
   const columns: any = [
-    { key: 'sort', align: 'center', width: 80, render: (key: DataType) => (!datasourcefatherid.includes(key.key) ? true : false) ? <DragHandle /> : null },
-    { title: tableItem.name, dataIndex: 'name', width: 500 },
+    { key: 'sort', align: 'center', width: 28, render: (key: DataType) => (!datasourcefatherid.includes(key.key) ? true : false) ? <DragHandle /> : null },
+    { title: tableItem.name, dataIndex: 'name',width: 450 },
     {
-      title: tableItem.actions, dataIndex: 'actions', width: 250, render: (arr: string[], key: DataType) => <><Button className='mr-[8px]' type='link' onClick={() => { addsubteams(key) }}>
-        {teamItem.addsubteams}
-      </Button> <Button className='mr-[8px]' type='link' onClick={() => { renameteams(key) }}>
-        {teamItem.rename}
-      </Button>
-      <Popconfirm
-        title="Do you Want to delete these item?"
-        description="After deletion,the data cannot be recovered."
-        onConfirm={() => { deleteteams(key) }}
-        onCancel={deletecancel}
-        okText="OK"
-        cancelText="Cancel"
-      >
-        <Button className='mr-[8px]' type='link'>
-          {teamItem.delete}
-        </Button>
-      </Popconfirm>
-
-
-      </>
+      title: tableItem.actions,
+      dataIndex: 'actions',
+      width: 300,
+      render: (arr: string[], key: DataType) => (
+        <>
+          <Button className='mr-[8px]' type='link' onClick={() => { addsubteams(key) }}>
+            {teamItem.addsubteams}
+          </Button>
+          <Button className='mr-[8px]' type='link' onClick={() => { renameteams(key) }}>
+            {teamItem.rename}
+          </Button>
+          {!key.children || key.children.length === 0 ? (
+            <Popconfirm
+              title="Do you Want to delete this item?"
+              description="After deletion, the data cannot be recovered."
+              onConfirm={() => { deleteteams(key) }}
+              onCancel={deletecancel}
+              okText="OK"
+              cancelText="Cancel"
+            >
+              <Button className='mr-[8px]' type='link'>
+                {teamItem.delete}
+              </Button>
+            </Popconfirm>
+          ) : null}
+        </>
+      )
     }
+    
   ];
   const [dataSource, setDataSource] = React.useState<DataType[]>();
   const [onlykeytable, setonlykeytable] = useState<string>('6');
@@ -175,7 +184,7 @@ const Teams = () => {
 
   //useEffect函数
   useEffect(() => {
-    getorganizationaldata();
+    getorganizationaldataApi();
   }, [])
 
 
@@ -194,22 +203,7 @@ const Teams = () => {
       />
     );
   };
-  //获取组织数据
-  async function getorganizationaldata() {
-    const data = await get('/lite/group/', {
-      params: {
-        max: 11
-      },
-    });
-    const arr = transformGroups(data);
-    setDataSource(arr);
-    const datasourcefatherid: string[] = []
-    arr.forEach((item: DataType) => {
-      datasourcefatherid.push(item.key);
-    });
-    setDatasourcefatherid(datasourcefatherid)
-  }
-
+ 
   const addNode = (treeData: DataType[], targetKey: string, newNode: DataType): DataType[] => {
     return treeData.map(node => {
       if (node.key === targetKey) {
@@ -227,19 +221,42 @@ const Teams = () => {
     });
   };
 
-  function onOkaddSubteam() {
-    const newData = addNode(dataSource as DataType[], addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname') })
-    setDataSource(newData);
-    setSortablearr([...sortablearr, onlykeytable])
-    const newkey = Number(onlykeytable) + 1;
-    setonlykeytable(newkey.toString())
-    setAddSubteammodalOpen(false);
-  }
-
   function addsubteams(key: { key: string }) {
     setAddSubteammodalOpen(true);
     setAddsubteamkey(key.key);
     form.resetFields();
+  }
+  function onOkaddSubteam() {
+    const newData = addNode(dataSource as DataType[], addsubteamkey, { key: onlykeytable, name: form.getFieldValue('teamname') })
+    setDataSource(newData);
+    addSubteamApi(onlykeytable);
+    setSortablearr([...sortablearr, onlykeytable])
+    const addSunteamParenId=findParentId(dataSource as DataType[], onlykeytable);
+    console.log(addSunteamParenId,"ffffff");
+    console.log("ttttt")
+    addSunteamParenId!== null? setExpandedRowKeys([...expandedRowKeysarr, addSunteamParenId!]): null;
+    const newkey = generateUUID();
+    setonlykeytable(newkey);
+    setAddSubteammodalOpen(false);
+  }
+  function findParentId(tree: DataType[], targetId: string): string | null {
+    // 内部递归函数，带父节点 ID 的参数
+    function traverse(nodes: DataType[], parentId: string | null): string | null {
+      for (const node of nodes) {
+        if (node.key === targetId) {
+          return parentId;
+        }
+        if (node.children) {
+          const result = traverse(node.children, node.key);
+          if (result !== null) {
+            return result;
+          }
+        }
+      }
+      return null;
+    }
+  
+    return traverse(tree, null);
   }
 
 
@@ -289,24 +306,6 @@ const Teams = () => {
     return null;
   }
 
-  const updateNodeData = (tree: DataType[], activeID: string, activeData: DataType): DataType[] => {
-    return tree.map(node => {
-      if (node.key === activeID) {
-        return {
-          ...node,
-          name: activeData.name,
-          children: activeData.children
-        };
-      } else if (node.children) {
-        return {
-          ...node,
-          children: updateNodeData(node.children, activeID, activeData)
-        };
-      }
-      return node;
-    });
-  }
-
   function renameteams(key: { key: string }) {
     setRenameteammodalOpen(true);
     setRenamekey(key.key);
@@ -318,7 +317,8 @@ const Teams = () => {
 
   function onOkrenameteam() {
     const newData = renameNode(dataSource as DataType[], renamekey, form.getFieldValue('renameteam'))
-    setDataSource(newData)
+    setDataSource(newData);
+    renameteamApi();
     setRenameteammodalOpen(false);
   }
 
@@ -336,7 +336,8 @@ const Teams = () => {
   function deleteteams(key: { key: string }) {
     const newData = deleteNode(dataSource as DataType[], key.key);
     setDataSource(newData);
-    message.success('Delete success');
+    deleteteamApi(key.key);
+    getorganizationaldataApi();
   }
 
   const isAncestor = (treeData: DataType[], nodeAKey: string, nodeBKey: string): boolean => {
@@ -376,9 +377,7 @@ const Teams = () => {
     } else {
       setExpandedRowKeys(expandedRowKeysarr.filter(item => item !== record.key))
     }
-    console.log('test', expanded, record)
   }
-
   const deletecancel: PopconfirmProps['onCancel'] = () => {
     message.error('Delete cancel');
   };
@@ -394,6 +393,69 @@ const Teams = () => {
       };
     });
   };
+  
+  const generateUUID = () => {
+    const newUUID = uuidv4();
+    return newUUID;
+  };
+
+  //api函数
+  async function getorganizationaldataApi() {
+    const data = await get('/lite/group/', {
+      params: {
+        max: 11
+      },
+    });
+    const arr = transformGroups(data);
+    setDataSource(arr);
+    const datasourcefatherid: string[] = []
+    arr.forEach((item: DataType) => {
+      datasourcefatherid.push(item.key);
+    });
+    setDatasourcefatherid(datasourcefatherid)
+  }
+
+
+  async function addSubteamApi(parent_group_id: string) {
+    try {
+      const response: { message: string } = await post(`/lite/group/`, {
+        params: {
+          group_name: form.getFieldValue('teamname'),
+          parent_group_id
+        },
+      });
+      message.success(response.message);
+
+    } catch (error) {
+      throw new Error('Failed to rename team');
+    }
+  }
+
+  async function renameteamApi() {
+    try {
+      const response: { message: string } = await put(`/lite/group/${renamekey}`, {
+        params: {
+          group_name: form.getFieldValue('renameteam'),
+        },
+      });
+      message.success(response.message)
+    } catch (error) {
+      throw new Error('Failed to rename team');
+    }
+  }
+
+  async function deleteteamApi(group_id: string) {
+    try {
+      const response: { message: string } = await del(`/lite/group/delete_groups/`, {
+        params: {
+          group_id
+        },
+      });
+      message.success(response.message);
+    } catch (error) {
+      throw new Error('Failed to rename team');
+    }
+  }
 
 
 
@@ -403,27 +465,38 @@ const Teams = () => {
       <div className='w-full h-[24px] mt-[19px] mb-[19px]'><Input className={`${teamsStyle.inputwidth}`} placeholder={`${commonItems.search}...`} size='small' /></div>
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
         <SortableContext items={[]} strategy={verticalListSortingStrategy}>
-          <CustomTable
-            rowKey="key"
-            pagination={false}
-            expandedRowKeys={expandedRowKeysarr}
-            onExpand={(expanded, record) => { onExpand(expanded, record) }}
-            size="small"
-            expandIconColumnIndex={1}
-            scroll={{ y: 'calc(100vh - 300px)', x: 'calc(100vw-100px)' }}
-            components={{ body: { row: Row } }}
-            columns={columns}
-            expandable={{
-              expandIcon: ({ expanded, onExpand, record }) =>
-                expanded ? (
-                  <CaretDownOutlined onClick={e => onExpand(record, e)} />
-                ) : (
-                  <CaretRightOutlined onClick={e => onExpand(record, e)} />
-                ),
-              indentSize: 22,
-            }}
-            dataSource={dataSource}
-          />
+          <ConfigProvider
+            theme={{
+              components: {
+                Table:{
+                  headerSplitColor: "#fafafa",
+                  selectionColumnWidth: 10,
+                }
+              }}}
+          >
+            <CustomTable
+              rowKey="key"
+              pagination={false}
+              expandedRowKeys={expandedRowKeysarr}
+              onExpand={(expanded, record) => { onExpand(expanded, record) }}
+              size="small"
+              expandIconColumnIndex={1}
+              scroll={{ y: 'calc(100vh - 300px)', x: 'calc(100vw-100px)' }}
+              components={{ body: { row: Row } }}
+              columns={columns}
+              expandable={{
+                expandIcon: ({ expanded, onExpand, record }) =>
+                  expanded ? (
+                    <CaretDownOutlined onClick={e => onExpand(record, e)} />
+                  ) : (
+                    <CaretRightOutlined onClick={e => onExpand(record, e)} />
+                  ),
+                indentSize: 22,
+              }}
+              dataSource={dataSource}
+            />
+          </ConfigProvider>
+         
         </SortableContext>
       </DndContext>
       <OperateModal

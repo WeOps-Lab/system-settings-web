@@ -75,13 +75,13 @@
     "teams": "Teams"
   },
   "tableItem":{
-    "username": "USERNAME",
-    "name": "NAME",
-    "email": "EMAIL",
-    "number": "NUMBER",
-    "team": "TEAM",
-    "role": "ROLE",
-    "actions": "ACTIONS",
+    "username": "Username",
+    "name": "Name",
+    "email": "Email",
+    "number": "Nunber",
+    "team": "Team",
+    "role": "Role",
+    "actions": "Actions",
     "administrator": "Administrator",
     "normalusers": "Normal Users"
   },

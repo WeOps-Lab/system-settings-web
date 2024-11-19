@@ -8,12 +8,14 @@ import { getRandomColor } from '@/utils/common';
 import IntroductionInfo from '@/components/introduction-info';
 import OperateModal from '@/components/operate-modal';
 import { Flex, Table, Tag, Space } from 'antd';
-import type { PopconfirmProps } from 'antd';
+import type { PopconfirmProps, RadioChangeEvent } from 'antd';
 import type { TreeDataNode } from 'antd';
 import type { TableColumnsType, TableProps } from 'antd';
 import userInfoStyle from './index.module.less';
 import { useTranslation } from '@/utils/i18n';
 import useApiClient from '@/utils/request';
+import RoleDescription from "@/components/role_description"
+
 
 
 
@@ -85,7 +87,9 @@ const User = () => {
   const modifydeleteuseref = useRef<HTMLButtonElement>(null);
   const modifyroleuseref = useRef<HTMLButtonElement>(null);
   const { get, del, post, put } = useApiClient();
-
+  const [ addroleselect,setAddroleselect]=useState<boolean>(true);
+  const [eidtroleselect,setEidtroleselect]=useState<boolean>(true);
+  const [modifyroleselect,setModifyroleselect]=useState<boolean>(true);
 
   const { t } = useTranslation();
   const tableItems =
@@ -175,9 +179,9 @@ const User = () => {
   // 表格数据
   const columns: TableColumnsType<DataType> = [
     {
-      title: 'Username',
+      title: 'USERNAME',
       dataIndex: 'username',
-      width: 240,
+      width: 185,
       render: (text) => {
         const color = getRandomColor();
         return (
@@ -193,13 +197,14 @@ const User = () => {
         );
       },
     },
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Email', dataIndex: 'email', width: 240 },
-    { title: 'Number', dataIndex: 'number' },
-    { title: 'Team', dataIndex: 'team' },
+    { title: 'NAME', dataIndex: 'name',width: 100 },
+    { title: 'EMAIL', dataIndex: 'email',width: 185},
+    { title: 'NUMBER', dataIndex: 'number',width: 110 },
+    { title: 'TEAM', dataIndex: 'team',width: 80 },
     {
-      title: 'Role',
+      title: 'ROLE',
       dataIndex: 'role',
+      width: 110,
       render: (text) => {
         const color = text === 'Administrator' ? 'green' : 'processing';
         return <Tag color={color}>{text}</Tag>;
@@ -267,7 +272,7 @@ const User = () => {
   }, []);
 
   useEffect(() => {
-    getuserslist();
+    getuserslistApi();
 
   }, []);
 
@@ -289,27 +294,6 @@ const User = () => {
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     setSelectedRowKeys(newSelectedRowKeys);
   };
-  //获取用户列表
-  async function getuserslist() {
-    const userslistdata = await get('/lite/user/', { params: { page: 1, page_size: 10 } });
-    const temparr: DataType[] = [];
-    userslistdata.forEach((item: User) => {
-      temparr.push({
-        key: item.id,
-        username: item.username,
-        name: item.firstName,
-        email: item.email,
-        number: item.Number,
-        team: item.team,
-        role: item.role
-
-      });
-
-
-    });
-    setTableData(temparr);
-
-  }
 
   const rowSelection: TableRowSelection<DataType> = {
     selectedRowKeys,
@@ -326,6 +310,8 @@ const User = () => {
   function onOk() {
     //点击确定按钮，将数据添加到表格中
     setTableData([...tabledata, { ...form.getFieldsValue(), key: onlykeytable }]);
+    addUserApi(onlykeytable);
+    getuserslistApi();
     setOnlykeytable(onlykeytable + 1);
     setAddModalOpen(false);
     setSelectedRowKeys([]);
@@ -348,6 +334,7 @@ const User = () => {
       });
     });
     setUsername(newarr);
+    modifyroleApi();
   }
   // 点击确定按钮，将修改数据添加到表格中
   const handleModalOpen = () => {
@@ -359,6 +346,7 @@ const User = () => {
       return item;
     });
     setTableData(newData);
+    getuserslistApi();
     setModalVisible(false);
     setSelectedRowKeys([]);
   };
@@ -370,18 +358,15 @@ const User = () => {
   const confirm: PopconfirmProps['onConfirm'] = () => {
     const newData = tabledata.filter((item) => !selectedRowKeys.includes(item.key));
     setTableData(newData);
+    modifydeleteApi();
+    getuserslistApi();
     setModifyRoleOpen(false);
   };
 
   const cancel: PopconfirmProps['onCancel'] = () => {
     setModifyRoleOpen(false);
   };
-  //调用接口编辑用户
-  async function editeuserApi(id: number) {
-    await put(`/lite/user/${id}/`, {
-      ...form.getFieldsValue()
-    })
-  }
+
   //编辑用户
   function editeuser(key: number) {
     setEditkey(key);
@@ -389,6 +374,7 @@ const User = () => {
     form.resetFields();
     const [editfinishdata] = tabledata.filter((item) => item.key === key);
     form.setFieldsValue({ ...editfinishdata });
+    console.log(form.getFieldsValue());
     setEdituseName(editfinishdata.username);
   }
   //点击确定按钮，将修改数据添加到表格中
@@ -400,7 +386,8 @@ const User = () => {
         : item;
     });
     setTableData(newarr);
-    editeuserApi(editkey)
+    editUserApi(editkey);
+    getuserslistApi();
     setEditmodalOpen(false);
     setSelectedRowKeys([]);
   }
@@ -420,12 +407,103 @@ const User = () => {
     deleteuser(key);
     const newData = tabledata.filter((item) => item.key !== key);
     setTableData(newData);
+    getuserslistApi();
   }
 
   const deletecancel: PopconfirmProps['onCancel'] = () => {
     message.error('Delete cancel');
   };
+  const onFormValuesChange = (changedValues: any, allValues: any) => {
+    // 得到当前选中的值
+    if (changedValues.role==="Administrator") {
+      setAddroleselect(true);
+    } else {
+      return false;
+    }
+  };
+  // 单选事件变化
+  function addradiochang(e: RadioChangeEvent) {
+    e.target.value === "Administrator" ? setAddroleselect(true):setAddroleselect(false);
+  }
+  function editradiochang(e: RadioChangeEvent) {
+    e.target.value === "Administrator" ? setEidtroleselect(true):setEidtroleselect(false);
+  }
+  function modifyroleradiochang(e: RadioChangeEvent) { 
+    e.target.value === "Administrator"? setModifyroleselect(true):setModifyroleselect(false);
+  }
 
+  //api接口
+  //获取用户列表
+  async function getuserslistApi() {
+    const userslistdata = await get('/lite/user/', { params: { page: 1, page_size: 10 } });
+    const temparr: DataType[] = [];
+    userslistdata.forEach((item: User) => {
+      temparr.push({
+        key: item.id,
+        username: item.username,
+        name: item.firstName,
+        email: item.email,
+        number: item.Number,
+        team: item.team,
+        role: item.role
+      });
+    });
+    setTableData(temparr);
+  
+  }
+  
+  async function editUserApi(id: number) {
+    try {
+      const response: { message: string } = await put(`/lite/user/${id}/`, {
+        ...form.getFieldsValue()
+      })
+      message.success(response.message);
+    } catch (error: any) {
+      message.error('Error while editing user');
+      throw new Error(error?.message || 'Unknown error occurred');
+    }
+  }
+
+  async function modifyroleApi() {
+    try {
+      const response: { message: string } = await put(`/lite/modifyrole`, {
+        selectedRowKeys
+      })
+      message.success(response.message);
+    } catch (error: any) {
+      message.error('Error while modifyrole user');
+      throw new Error(error?.message || 'Unknown error occurred');
+    }
+  }
+
+  async function modifydeleteApi() {
+    try {
+      const response: { message: string } = await del(`/lite/modifydelete`, {
+        params: {
+          selectedRowKeys
+        }
+      })
+      message.success(response.message);
+    } catch (error: any) {
+      message.error('Error while modifydelete user');
+      throw new Error(error?.message || 'Unknown error occurred');
+    }
+  }
+
+  async function addUserApi(key: number) {
+    try {
+      const response: { message: string } = await post(`/lite/user/`, {
+        params: {
+          ...form.getFieldsValue(),
+          key
+        }
+      })
+      message.success(response.message);
+    } catch (error: any) {
+      message.error('Error while editing user');
+      throw new Error(error?.message || 'Unknown error occurred');
+    }
+  }
   return (
     <div className={`${userInfoStyle.userInfo} ${userInfoStyle.bgHeight}`}>
       {contextHolder}
@@ -441,7 +519,7 @@ const User = () => {
             theme={{
               token: {
                 colorPrimary: '#E6F4FF',
-              },
+              }
             }}
           >
             <DirectoryTree
@@ -464,6 +542,7 @@ const User = () => {
                 <Button className="mr-1 mt-1" type="primary" onClick={addData}>
                   +{commonItems.add}
                 </Button>
+                {/* add弹窗 */}
                 <OperateModal
                   title={commonItems.addNew}
                   closable={false}
@@ -472,11 +551,12 @@ const User = () => {
                   cancelText={commonItems.cancel}
                   onOk={() => onOk()}
                   onCancel={() => setAddModalOpen(false)}
+                  width={500}
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="username" label={`${tableItems.username}*`} colon={false}>
                       <Input placeholder="input placeholder" />
                     </Form.Item>
@@ -484,15 +564,14 @@ const User = () => {
                       name="name"
                       label={`${tableItems.name}`}
                       colon={false}
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                     >
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="email"
                       label={`${tableItems.email}`}
                       colon={false}
@@ -500,8 +579,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="number"
                       label={`${tableItems.number}`}
                       colon={false}
@@ -509,8 +588,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="team"
                       label={`${tableItems.team}*`}
                       colon={false}
@@ -526,21 +605,23 @@ const User = () => {
                         placeholder="select it"
                       />
                     </Form.Item>
-                    <Form.Item name="role" colon={false}>
-                      <Radio.Group block options={options} />
+                    <Form.Item 
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }} 
+                      label={`${tableItems.role}*`}
+                      name="role" colon={false}>
+                      <Radio.Group className={`${userInfoStyle.removeSingleChoiceInterval}`} block options={options} onChange={addradiochang} />
                     </Form.Item>
-                    <Form.Item name="comment" colon={false}>
-                      <Tag className="ml-[50px]">
-                        The administrator supports organization and member
-                        management in the
-                        <br />
-                        background, or configuration in the backend management
-                        of other <br />
-                        modules, to ensure regular user operation.
-                      </Tag>
+                    <Form.Item
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }} 
+                      label={'  '}
+                      name="comment" colon={false}>
+                      <RoleDescription modifyRoleSelect={addroleselect} />
                     </Form.Item>
                   </Form>
                 </OperateModal>
+                {/* edit */}
                 <OperateModal
                   closable={false}
                   title={`Edite-${edituseName}`}
@@ -552,15 +633,14 @@ const User = () => {
                 >
                   <Form style={{ maxWidth: 600 }} form={form}>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="username" label={`${tableItems.username}*`} colon={false}>
-
                       <Input disabled={true} placeholder={edituseName} ></Input>
                     </Form.Item>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="name"
                       label={`${tableItems.name}`}
                       colon={false}
@@ -568,8 +648,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="email"
                       label={`${tableItems.email}`}
                       colon={false}
@@ -577,8 +657,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="number"
                       label={`${tableItems.number}`}
                       colon={false}
@@ -586,8 +666,8 @@ const User = () => {
                       <Input placeholder="input placeholder" />
                     </Form.Item>
                     <Form.Item
-                      labelCol={{ span: 7 }}
-                      wrapperCol={{ span: 16 }}
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }}
                       name="team"
                       label={`${tableItems.team}*`}
                       colon={false}
@@ -603,17 +683,19 @@ const User = () => {
                         placeholder="select it"
                       />
                     </Form.Item>
-                    <Form.Item name="role" colon={false}>
-                      <Radio.Group block options={options} />
+                    <Form.Item
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }} 
+                      label={`${tableItems.role}*`}
+                      name="role" colon={false}>
+                      <Radio.Group className={`${userInfoStyle.removeSingleChoiceInterval}`}  block options={options} onChange={editradiochang} />
                     </Form.Item>
-                    <Form.Item name="comment" colon={false}>
-                      <Tag className="ml-[50px]">
-                        The administrator supports organization and member
-                        management in the <br />
-                        background, or configuration in the backend management
-                        of other <br />
-                        modules, to ensure regular user operation.
-                      </Tag>
+                    <Form.Item
+                      labelCol={{ span: 4 }}
+                      wrapperCol={{ span: 18 }} 
+                      label={'  '}
+                      name="comment" colon={false}>
+                      {<RoleDescription modifyRoleSelect={eidtroleselect} ></RoleDescription>}
                     </Form.Item>
                   </Form>
                 </OperateModal>
@@ -626,6 +708,7 @@ const User = () => {
                   {commonItems.modifyrole}
                 </Button>
                 <OperateModal
+                  width={500}
                   title="Batch Modify Roles"
                   closable={false}
                   open={modalVisible}
@@ -634,26 +717,22 @@ const User = () => {
                   onOk={handleModalOpen}
                   onCancel={handleModalClose}
                 >
-                  <Form style={{ maxWidth: 600 }} form={form}>
-                    <Form.Item className="ml-[50px]" colon={false}>
+                  <Form style={{ maxWidth: 600 }} form={form} onValuesChange={onFormValuesChange}>
+                    <Form.Item 
+                      colon={false}>
                       <span>Selected users:</span>
                       <span className="text-[#1890ff]">
                         {username.toString()}
                       </span>
                     </Form.Item>
-                    <Form.Item name="role" colon={false}>
-                      <Radio.Group block options={options} />
+                    <Form.Item
+                      name="role" colon={false}>
+                      <Radio.Group  className={`${userInfoStyle.removeSingleChoiceInterval}`}  block options={options} onChange={modifyroleradiochang}/>
                     </Form.Item>
-                    <Form.Item name="comment" colon={false}>
-                      <Tag className="ml-[50px]">
-                        The administrator role supports organization and member
-                        management in
-                        <br />
-                        the background, or configuration in the backend
-                        management of other
-                        <br />
-                        modules, to ensure normal user operation.
-                      </Tag>
+                    <Form.Item
+                     
+                      label={''} name="comment" colon={false}>
+                      <RoleDescription modifyRoleSelect={modifyroleselect}></RoleDescription>
                     </Form.Item>
                   </Form>
                 </OperateModal>
@@ -698,14 +777,23 @@ const User = () => {
           </div>
           <div className={`${userInfoStyle.bgColor} pt-[29px] pl-[9px] pr-[9px]`}>
             <Flex gap="middle" vertical>
-              <Table<DataType>
-                size={'middle'}
-                scroll={{ y: 'calc(100vh - 360px)', x: 'calc(100vw - 250px)' }}
-                pagination={{ pageSize: 5 }}
-                columns={columns}
-                dataSource={tabledata}
-                rowSelection={rowSelection}
-              />
+              <ConfigProvider
+                theme={{
+                  components: {
+                    Table:{
+                      headerSplitColor: "#fafafa",
+                    }
+                  }}}
+              >
+                <Table<DataType>
+                  size={'middle'}
+                  scroll={{ y: 'calc(100vh - 360px)', x: 'calc(100vw - 250px)' }}
+                  pagination={{ pageSize: 5 }}
+                  columns={columns}
+                  dataSource={tabledata}
+                  rowSelection={rowSelection}
+                />
+              </ConfigProvider>
             </Flex>
           </div>
         </div>
