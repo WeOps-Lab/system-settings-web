@@ -14,7 +14,7 @@ import type { TableColumnsType, TableProps } from 'antd';
 import userInfoStyle from './index.module.less';
 import { useTranslation } from '@/utils/i18n';
 import useApiClient from '@/utils/request';
-import RoleDescription from "@/components/role_description"
+import RoleDescription from "@/components/role-description"
 
 
 
@@ -63,6 +63,16 @@ interface User {
   bruteForceStatus: BruteForceStatus;
 }
 
+// 定义组织列表的接口
+
+interface Accessgrouplist {
+  view: boolean;
+  viewMembers: boolean;
+  manageMembers: boolean;
+  manage: boolean;
+  manageMembership: boolean;
+}
+
 type TableRowSelection<T extends object = object> =
   TableProps<T>['rowSelection'];
 
@@ -87,9 +97,9 @@ const User = () => {
   const modifydeleteuseref = useRef<HTMLButtonElement>(null);
   const modifyroleuseref = useRef<HTMLButtonElement>(null);
   const { get, del, post, put } = useApiClient();
-  const [ addroleselect,setAddroleselect]=useState<boolean>(true);
-  const [eidtroleselect,setEidtroleselect]=useState<boolean>(true);
-  const [modifyroleselect,setModifyroleselect]=useState<boolean>(true);
+  const [addroleselect, setAddroleselect] = useState<boolean>(true);
+  const [eidtroleselect, setEidtroleselect] = useState<boolean>(true);
+  const [modifyroleselect, setModifyroleselect] = useState<boolean>(true);
 
   const { t } = useTranslation();
   const tableItems =
@@ -175,6 +185,7 @@ const User = () => {
       ],
     },
   ];
+  const [grouptreedata, setGrouptreeData] = useState<TreeDataNode[]>(treeData);
 
   // 表格数据
   const columns: TableColumnsType<DataType> = [
@@ -197,10 +208,10 @@ const User = () => {
         );
       },
     },
-    { title: 'NAME', dataIndex: 'name',width: 100 },
-    { title: 'EMAIL', dataIndex: 'email',width: 185},
-    { title: 'NUMBER', dataIndex: 'number',width: 110 },
-    { title: 'TEAM', dataIndex: 'team',width: 80 },
+    { title: 'NAME', dataIndex: 'name', width: 100 },
+    { title: 'EMAIL', dataIndex: 'email', width: 185 },
+    { title: 'NUMBER', dataIndex: 'number', width: 110 },
+    { title: 'TEAM', dataIndex: 'team', width: 80 },
     {
       title: 'ROLE',
       dataIndex: 'role',
@@ -273,7 +284,7 @@ const User = () => {
 
   useEffect(() => {
     getuserslistApi();
-
+    getgrouplistApi();
   }, []);
 
 
@@ -415,7 +426,7 @@ const User = () => {
   };
   const onFormValuesChange = (changedValues: any, allValues: any) => {
     // 得到当前选中的值
-    if (changedValues.role==="Administrator") {
+    if (changedValues.role === "Administrator") {
       setAddroleselect(true);
     } else {
       return false;
@@ -423,14 +434,16 @@ const User = () => {
   };
   // 单选事件变化
   function addradiochang(e: RadioChangeEvent) {
-    e.target.value === "Administrator" ? setAddroleselect(true):setAddroleselect(false);
+    e.target.value === "Administrator" ? setAddroleselect(true) : setAddroleselect(false);
   }
   function editradiochang(e: RadioChangeEvent) {
-    e.target.value === "Administrator" ? setEidtroleselect(true):setEidtroleselect(false);
+    e.target.value === "Administrator" ? setEidtroleselect(true) : setEidtroleselect(false);
   }
-  function modifyroleradiochang(e: RadioChangeEvent) { 
-    e.target.value === "Administrator"? setModifyroleselect(true):setModifyroleselect(false);
+  function modifyroleradiochang(e: RadioChangeEvent) {
+    e.target.value === "Administrator" ? setModifyroleselect(true) : setModifyroleselect(false);
   }
+
+
 
   //api接口
   //获取用户列表
@@ -449,9 +462,8 @@ const User = () => {
       });
     });
     setTableData(temparr);
-  
   }
-  
+
   async function editUserApi(id: number) {
     try {
       const response: { message: string } = await put(`/lite/user/${id}/`, {
@@ -498,6 +510,15 @@ const User = () => {
           key
         }
       })
+      message.success(response.message);
+    } catch (error: any) {
+      message.error('Error while editing user');
+      throw new Error(error?.message || 'Unknown error occurred');
+    }
+  }
+  async function getgrouplistApi() {
+    try {
+      const response: { message: string } = await get(`/lite/group/`)
       message.success(response.message);
     } catch (error: any) {
       message.error('Error while editing user');
@@ -605,16 +626,16 @@ const User = () => {
                         placeholder="select it"
                       />
                     </Form.Item>
-                    <Form.Item 
+                    <Form.Item
                       labelCol={{ span: 4 }}
-                      wrapperCol={{ span: 18 }} 
+                      wrapperCol={{ span: 18 }}
                       label={`${tableItems.role}*`}
                       name="role" colon={false}>
                       <Radio.Group className={`${userInfoStyle.removeSingleChoiceInterval}`} block options={options} onChange={addradiochang} />
                     </Form.Item>
                     <Form.Item
                       labelCol={{ span: 4 }}
-                      wrapperCol={{ span: 18 }} 
+                      wrapperCol={{ span: 18 }}
                       label={'  '}
                       name="comment" colon={false}>
                       <RoleDescription modifyRoleSelect={addroleselect} />
@@ -685,14 +706,14 @@ const User = () => {
                     </Form.Item>
                     <Form.Item
                       labelCol={{ span: 4 }}
-                      wrapperCol={{ span: 18 }} 
+                      wrapperCol={{ span: 18 }}
                       label={`${tableItems.role}*`}
                       name="role" colon={false}>
-                      <Radio.Group className={`${userInfoStyle.removeSingleChoiceInterval}`}  block options={options} onChange={editradiochang} />
+                      <Radio.Group className={`${userInfoStyle.removeSingleChoiceInterval}`} block options={options} onChange={editradiochang} />
                     </Form.Item>
                     <Form.Item
                       labelCol={{ span: 4 }}
-                      wrapperCol={{ span: 18 }} 
+                      wrapperCol={{ span: 18 }}
                       label={'  '}
                       name="comment" colon={false}>
                       {<RoleDescription modifyRoleSelect={eidtroleselect} ></RoleDescription>}
@@ -718,7 +739,7 @@ const User = () => {
                   onCancel={handleModalClose}
                 >
                   <Form style={{ maxWidth: 600 }} form={form} onValuesChange={onFormValuesChange}>
-                    <Form.Item 
+                    <Form.Item
                       colon={false}>
                       <span>Selected users:</span>
                       <span className="text-[#1890ff]">
@@ -727,10 +748,10 @@ const User = () => {
                     </Form.Item>
                     <Form.Item
                       name="role" colon={false}>
-                      <Radio.Group  className={`${userInfoStyle.removeSingleChoiceInterval}`}  block options={options} onChange={modifyroleradiochang}/>
+                      <Radio.Group className={`${userInfoStyle.removeSingleChoiceInterval}`} block options={options} onChange={modifyroleradiochang} />
                     </Form.Item>
                     <Form.Item
-                     
+
                       label={''} name="comment" colon={false}>
                       <RoleDescription modifyRoleSelect={modifyroleselect}></RoleDescription>
                     </Form.Item>
@@ -780,10 +801,11 @@ const User = () => {
               <ConfigProvider
                 theme={{
                   components: {
-                    Table:{
+                    Table: {
                       headerSplitColor: "#fafafa",
                     }
-                  }}}
+                  }
+                }}
               >
                 <Table<DataType>
                   size={'middle'}

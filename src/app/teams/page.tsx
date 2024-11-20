@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useContext, useMemo, useEffect, Children } from 'react';
-import { Button, Input, Form, message, Popconfirm,ConfigProvider } from 'antd';
+import { Button, Input, Form, message, Popconfirm, ConfigProvider } from 'antd';
 import 'antd/dist/reset.css';
 import IntroductionInfo from '@/components/introduction-info';
 import OperateModal from '@/components/operate-modal';
@@ -133,7 +133,7 @@ const Teams = () => {
   //数据
   const columns: any = [
     { key: 'sort', align: 'center', width: 28, render: (key: DataType) => (!datasourcefatherid.includes(key.key) ? true : false) ? <DragHandle /> : null },
-    { title: tableItem.name, dataIndex: 'name',width: 450 },
+    { title: tableItem.name, dataIndex: 'name', width: 450 },
     {
       title: tableItem.actions,
       dataIndex: 'actions',
@@ -163,10 +163,10 @@ const Teams = () => {
         </>
       )
     }
-    
+
   ];
   const [dataSource, setDataSource] = React.useState<DataType[]>();
-  const [onlykeytable, setonlykeytable] = useState<string>('6');
+  const [onlykeytable, setOnlykeytable] = useState<string>('6');
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
     if (active.id !== over?.id && over?.id) {
@@ -203,7 +203,7 @@ const Teams = () => {
       />
     );
   };
- 
+
   const addNode = (treeData: DataType[], targetKey: string, newNode: DataType): DataType[] => {
     return treeData.map(node => {
       if (node.key === targetKey) {
@@ -231,33 +231,49 @@ const Teams = () => {
     setDataSource(newData);
     addSubteamApi(onlykeytable);
     setSortablearr([...sortablearr, onlykeytable])
-    const addSunteamParenId=findParentId(dataSource as DataType[], onlykeytable);
-    console.log(addSunteamParenId,"ffffff");
-    console.log("ttttt")
-    addSunteamParenId!== null? setExpandedRowKeys([...expandedRowKeysarr, addSunteamParenId!]): null;
+    setExpandedRowKeys([...expandedRowKeysarr, addsubteamkey])
     const newkey = generateUUID();
-    setonlykeytable(newkey);
+    setOnlykeytable(newkey);
     setAddSubteammodalOpen(false);
   }
-  function findParentId(tree: DataType[], targetId: string): string | null {
-    // 内部递归函数，带父节点 ID 的参数
-    function traverse(nodes: DataType[], parentId: string | null): string | null {
-      for (const node of nodes) {
-        if (node.key === targetId) {
-          return parentId;
-        }
-        if (node.children) {
-          const result = traverse(node.children, node.key);
-          if (result !== null) {
-            return result;
-          }
+
+  const findParentId = (
+    tree: DataType[],
+    targetId: string,
+    parentId: string | null = null
+  ): string | null => {
+    for (const node of tree) {
+      if (node.key === targetId) {
+        return parentId;
+      }
+      if (node.children) {
+        const result = findParentId(node.children, targetId, node.key);
+        if (result) {
+          return result;
         }
       }
-      return null;
     }
-  
-    return traverse(tree, null);
-  }
+    return null;
+  };
+  // function findParentId(tree: DataType[], targetId: string): string | null {
+  //   // 内部递归函数，带父节点 ID 的参数
+  //   function traverse(nodes: DataType[], parentId: string | null): string | null {
+  //     for (const node of nodes) {
+  //       if (node.key === targetId) {
+  //         return parentId;
+  //       }
+  //       if (node.children) {
+  //         const result = traverse(node.children, node.key);
+  //         if (result !== null) {
+  //           return result;
+  //         }
+  //       }
+  //     }
+  //     return null;
+  //   }
+
+  //   return traverse(tree, null);
+  // }
 
 
   const renameNode = (treeData: DataType[], targetKey: string, renameTeam: string): DataType[] => {
@@ -393,7 +409,7 @@ const Teams = () => {
       };
     });
   };
-  
+
   const generateUUID = () => {
     const newUUID = uuidv4();
     return newUUID;
@@ -462,17 +478,18 @@ const Teams = () => {
   return (
     <div className={`${teamsStyle.height}`} >
       <IntroductionInfo title={teamItem.teams} message={teamItem.teaminfo} />
-      <div className='w-full h-[24px] mt-[19px] mb-[19px]'><Input className={`${teamsStyle.inputwidth}`} placeholder={`${commonItems.search}...`} size='small' /></div>
+      <div className='w-full h-[24px] mt-[19px] mb-[19px]'><Input className='inputwidth' placeholder={`${commonItems.search}...`} size='small' /></div>
       <DndContext modifiers={[restrictToVerticalAxis]} onDragEnd={onDragEnd}>
         <SortableContext items={[]} strategy={verticalListSortingStrategy}>
           <ConfigProvider
             theme={{
               components: {
-                Table:{
+                Table: {
                   headerSplitColor: "#fafafa",
                   selectionColumnWidth: 10,
                 }
-              }}}
+              }
+            }}
           >
             <CustomTable
               rowKey="key"
@@ -496,7 +513,7 @@ const Teams = () => {
               dataSource={dataSource}
             />
           </ConfigProvider>
-         
+
         </SortableContext>
       </DndContext>
       <OperateModal
